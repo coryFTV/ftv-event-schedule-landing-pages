@@ -41,38 +41,67 @@ function GoogleSheetsPreview({ sheetId, sheetName, range }) {
   
   return (
     <div className="google-sheets-preview">
-      <div className="sheets-header">
-        <h2>Google Sheets Preview</h2>
-        <div className="sheets-info">
-          <p>Sheet ID: {effectiveSheetId}</p>
-          <p>Sheet Name: {effectiveSheetName}</p>
-          {range && <p>Range: {range}</p>}
+      <div className="content-card">
+        <div className="sheets-header">
+          <h2>Google Sheets Preview</h2>
+          <div className="sheets-info">
+            <div className="info-item">
+              <span className="info-label">Sheet ID:</span>
+              <span className="info-value">{effectiveSheetId}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Sheet Name:</span>
+              <span className="info-value">{effectiveSheetName}</span>
+            </div>
+            {range && (
+              <div className="info-item">
+                <span className="info-label">Range:</span>
+                <span className="info-value">{range}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {loading && (
+          <div className="sheets-loading">
+            <div className="loading-spinner"></div>
+            <p>Loading Google Sheet...</p>
+          </div>
+        )}
+        
+        {error && (
+          <div className="sheets-error">
+            <div className="error-icon">!</div>
+            <p>{error}</p>
+          </div>
+        )}
+        
+        <div className="sheets-iframe-container">
+          <iframe 
+            src={buildPublicUrl()}
+            title="Google Sheets Preview"
+            className="sheets-iframe"
+            onLoad={handleIframeLoad}
+            onError={handleIframeError}
+          />
         </div>
       </div>
       
-      {loading && <div className="sheets-loading">Loading Google Sheet...</div>}
-      {error && <div className="sheets-error">{error}</div>}
-      
-      <div className="sheets-iframe-container">
-        <iframe 
-          src={buildPublicUrl()}
-          title="Google Sheets Preview"
-          className="sheets-iframe"
-          onLoad={handleIframeLoad}
-          onError={handleIframeError}
-        />
-      </div>
-      
-      <div className="sheets-instructions">
-        <h3>How to make your sheet accessible:</h3>
-        <ol>
-          <li>Open your Google Sheet</li>
-          <li>Click on File → Share → Publish to web</li>
-          <li>Select the sheet you want to publish</li>
-          <li>Click "Publish" and copy the URL</li>
-          <li>The sheet ID is the long string in the URL between /d/ and /pubhtml</li>
-        </ol>
-        <p className="sheets-note">Note: This method only works with sheets that are published to the web. No API key required!</p>
+      <div className="content-card">
+        <div className="sheets-instructions">
+          <h3>How to make your sheet accessible</h3>
+          <p>Follow these steps to publish your Google Sheet for embedding:</p>
+          <ol>
+            <li>Open your Google Sheet</li>
+            <li>Click on <strong>File → Share → Publish to web</strong></li>
+            <li>Select the sheet you want to publish</li>
+            <li>Click <strong>Publish</strong> and copy the URL</li>
+            <li>The sheet ID is the long string in the URL between <code>/d/</code> and <code>/pubhtml</code></li>
+          </ol>
+          <div className="sheets-note">
+            <p>Note: This method only works with sheets that are published to the web. No API key required!</p>
+          </div>
+        </div>
       </div>
     </div>
   );

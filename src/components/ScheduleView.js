@@ -193,90 +193,94 @@ function ScheduleView({ data, loading, error, filter, title }) {
   
   return (
     <div className="schedule-container">
-      <h1>{title || 'Sports Schedule'}</h1>
-      
-      <div className="schedule-controls">
-        <div className="search-container">
-          <input
-            type="text"
-            placeholder="Search events, teams, networks..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-        </div>
+      <div className="content-card">
+        <h1>{title || 'Sports Schedule'}</h1>
         
-        <div className="results-count">
-          Showing {filteredData.length} {filteredData.length === 1 ? 'result' : 'results'}
+        <div className="schedule-controls">
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Search events, teams, networks..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
+          
+          <div className="results-count">
+            Showing {filteredData.length} {filteredData.length === 1 ? 'result' : 'results'}
+          </div>
         </div>
       </div>
       
-      <table className="schedule-table">
-        <thead>
-          <tr>
-            <th onClick={() => handleSort('network')}>
-              Networks{getSortIndicator('network')}
-            </th>
-            <th onClick={() => handleSort('starttime')}>
-              Date{getSortIndicator('starttime')}
-            </th>
-            <th>Time</th>
-            <th onClick={() => handleSort('league')}>
-              League{getSortIndicator('league')}
-            </th>
-            <th onClick={() => handleSort('title')}>
-              Matchup{getSortIndicator('title')}
-            </th>
-            <th onClick={() => handleSort('sport')}>
-              Sport{getSortIndicator('sport')}
-            </th>
-            <th>Regional</th>
-            <th>URL</th>
-            <th onClick={() => handleSort('source')}>
-              Source{getSortIndicator('source')}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.length > 0 ? (
-            filteredData.map((match, index) => {
-              // Handle both starttime and startTime formats
-              const timeString = match.starttime || match.startTime;
-              const { datePart, timePart } = convertToEasternTime(timeString);
-              return (
-                <tr key={index}>
-                  <td>{match.network || 'N/A'}</td>
-                  <td>{datePart}</td>
-                  <td>{timePart}</td>
-                  <td>{match.league || match.sport}</td>
-                  <td>{match.title}</td>
-                  <td>{match.sport}</td>
-                  <td>{(match.regionalRestrictions || match.isRegional) ? 'Yes' : 'No'}</td>
-                  <td>
-                    <button 
-                      className="url-builder-button"
-                      onClick={() => openUrlBuilder(match)}
-                    >
-                      Create URL
-                    </button>
-                  </td>
-                  <td>
-                    <span className={`source-badge ${match.source === 'fubo_api' ? 'source-fubo' : 'source-original'}`}>
-                      {match.source === 'fubo_api' ? 'Fubo API' : 'Original'}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })
-          ) : (
+      <div className="content-card">
+        <table className="schedule-table">
+          <thead>
             <tr>
-              <td colSpan="8" className="no-results">
-                No events found matching your criteria
-              </td>
+              <th onClick={() => handleSort('network')}>
+                Networks{getSortIndicator('network')}
+              </th>
+              <th onClick={() => handleSort('starttime')}>
+                Date{getSortIndicator('starttime')}
+              </th>
+              <th>Time</th>
+              <th onClick={() => handleSort('league')}>
+                League{getSortIndicator('league')}
+              </th>
+              <th onClick={() => handleSort('title')}>
+                Matchup{getSortIndicator('title')}
+              </th>
+              <th onClick={() => handleSort('sport')}>
+                Sport{getSortIndicator('sport')}
+              </th>
+              <th>Regional</th>
+              <th>URL</th>
+              <th onClick={() => handleSort('source')}>
+                Source{getSortIndicator('source')}
+              </th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredData.length > 0 ? (
+              filteredData.map((match, index) => {
+                // Handle both starttime and startTime formats
+                const timeString = match.starttime || match.startTime;
+                const { datePart, timePart } = convertToEasternTime(timeString);
+                return (
+                  <tr key={index}>
+                    <td>{match.network || 'N/A'}</td>
+                    <td>{datePart}</td>
+                    <td>{timePart}</td>
+                    <td>{match.league || match.sport}</td>
+                    <td>{match.title}</td>
+                    <td>{match.sport}</td>
+                    <td>{(match.regionalRestrictions || match.isRegional) ? 'Yes' : 'No'}</td>
+                    <td>
+                      <button 
+                        className="btn btn-secondary"
+                        onClick={() => openUrlBuilder(match)}
+                      >
+                        Create URL
+                      </button>
+                    </td>
+                    <td>
+                      <span className={`source-badge ${match.source === 'fubo_api' ? 'source-fubo' : 'source-original'}`}>
+                        {match.source === 'fubo_api' ? 'Fubo API' : 'Original'}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="9" className="no-results">
+                  No events found matching your criteria
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
       
       {selectedMatch && (
         <URLBuilder 

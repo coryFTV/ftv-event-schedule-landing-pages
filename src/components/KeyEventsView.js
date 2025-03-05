@@ -48,7 +48,7 @@ function KeyEventsView() {
         setLoading(false);
       } catch (err) {
         console.error('Error loading Google Sheets data:', err);
-        setError('Failed to load key events from Google Sheets. Please try again later.');
+        setError(`Failed to load key events: ${err.message}`);
         setLoading(false);
       }
     }
@@ -64,61 +64,76 @@ function KeyEventsView() {
     setSelectedMatch(null);
   };
   
-  if (loading) return <div className="loading">Loading key events data...</div>;
-  if (error) return <div className="error">{error}</div>;
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <span>Loading key events...</span>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="error-container">
+        <h2>Something went wrong</h2>
+        <p>{error}</p>
+        <button className="btn" onClick={() => window.location.reload()}>Try Again</button>
+      </div>
+    );
+  }
   
   return (
     <div className="schedule-container">
-      <h1>Key Events on Fubo</h1>
-      
-      <div className="schedule-controls">
-        <div className="results-count">
-          Showing {data.length} key {data.length === 1 ? 'event' : 'events'}
-        </div>
+      <div className="content-card">
+        <h1>Key Events on Fubo</h1>
+        <p>Showing the most important upcoming sports events and highlights on Fubo TV.</p>
       </div>
       
-      <table className="schedule-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Event</th>
-            <th>Sport</th>
-            <th>Network</th>
-            <th>URL</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.length > 0 ? (
-            data.map((match, index) => {
-              const { datePart, timePart } = convertToEasternTime(match.starttime);
-              return (
-                <tr key={index}>
-                  <td>{datePart}</td>
-                  <td>{timePart}</td>
-                  <td>{match.title}</td>
-                  <td>{match.sport}</td>
-                  <td>{match.network}</td>
-                  <td>
-                    <button 
-                      className="url-builder-button"
-                      onClick={() => openUrlBuilder(match)}
-                    >
-                      Create URL
-                    </button>
-                  </td>
-                </tr>
-              );
-            })
-          ) : (
-            <tr>
-              <td colSpan="6" className="no-results">
-                No key events found for the upcoming period
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+      <div className="content-card">
+        {data.length === 0 ? (
+          <div className="no-results">
+            No key events found for the upcoming period. Check back later.
+          </div>
+        ) : (
+          <table className="schedule-table">
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Sport</th>
+                <th>League</th>
+                <th>Network</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((event, index) => {
+                const { datePart, timePart } = convertToEasternTime(event.starttime);
+                return (
+                  <tr key={index}>
+                    <td>{event.title}</td>
+                    <td>{datePart}</td>
+                    <td>{timePart}</td>
+                    <td>{event.sport}</td>
+                    <td>{event.league}</td>
+                    <td>{event.network}</td>
+                    <td>
+                      <button 
+                        className="btn btn-secondary"
+                        onClick={() => openUrlBuilder(event)}
+                      >
+                        Create URL
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
       
       {selectedMatch && (
         <URLBuilder 
@@ -126,12 +141,6 @@ function KeyEventsView() {
           onClose={closeUrlBuilder} 
         />
       )}
-      
-      <div className="data-source-info">
-        <p>Data source: Google Sheets - Updated automatically</p>
-        <p>Sheet ID: {SHEET_ID}</p>
-        <p>Last fetched: {new Date().toLocaleString()}</p>
-      </div>
     </div>
   );
 }

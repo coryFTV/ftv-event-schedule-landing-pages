@@ -123,8 +123,24 @@ function App() {
     }
   }, [data, fuboData]);
   
-  if (loading) return <div className="loading-container">Loading events data...</div>;
-  if (error) return <div className="error-container">Error: {error}</div>;
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <span>Loading content...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <h2>Something went wrong</h2>
+        <p>{error}</p>
+        <button className="btn" onClick={() => window.location.reload()}>Try Again</button>
+      </div>
+    );
+  }
   
   return (
     <Router>

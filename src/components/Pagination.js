@@ -1,7 +1,9 @@
 import React from 'react';
 import './Pagination.css';
 
-function Pagination({ currentPage, totalPages, onPageChange }) {
+function Pagination({ currentPage, totalItems, itemsPerPage, onPageChange, onItemsPerPageChange }) {
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  
   // Generate page numbers to display
   const getPageNumbers = () => {
     const pages = [];
@@ -51,36 +53,61 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
     return pages;
   };
   
+  if (totalPages <= 1) {
+    return null; // Don't show pagination if there's only one page
+  }
+  
   return (
-    <div className="pagination">
-      <button 
-        className="pagination-button"
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-      >
-        Previous
-      </button>
-      
-      <div className="pagination-pages">
-        {getPageNumbers().map((page, index) => (
-          <button
-            key={index}
-            className={`pagination-page ${page === currentPage ? 'active' : ''} ${page === '...' ? 'ellipsis' : ''}`}
-            onClick={() => page !== '...' && onPageChange(page)}
-            disabled={page === '...'}
-          >
-            {page}
-          </button>
-        ))}
+    <div className="pagination-container">
+      <div className="pagination">
+        <button 
+          className="pagination-button"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          <span className="pagination-icon">←</span> Previous
+        </button>
+        
+        <div className="pagination-pages">
+          {getPageNumbers().map((page, index) => (
+            <button
+              key={index}
+              className={`pagination-page ${page === currentPage ? 'active' : ''} ${page === '...' ? 'ellipsis' : ''}`}
+              onClick={() => page !== '...' && onPageChange(page)}
+              disabled={page === '...'}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+        
+        <button 
+          className="pagination-button"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Next <span className="pagination-icon">→</span>
+        </button>
       </div>
       
-      <button 
-        className="pagination-button"
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-      >
-        Next
-      </button>
+      {onItemsPerPageChange && (
+        <div className="items-per-page-container">
+          <label>
+            Items per page:
+            <select 
+              value={itemsPerPage} 
+              onChange={onItemsPerPageChange}
+              className="items-per-page-select"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </label>
+        </div>
+      )}
     </div>
   );
 }
