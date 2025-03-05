@@ -1,0 +1,198 @@
+.landing-page-link {
+  color: #0066cc;
+  text-decoration: none;
+  display: block;
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.landing-page-link:hover {
+  text-decoration: underline;
+}
+
+.action-button {
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  margin-right: 5px;
+}
+
+.action-button:hover {
+  background-color: #0052a3;
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+}
+
+.filter-group label {
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.filter-group select,
+.filter-group input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+.export-container {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.export-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.export-button:hover {
+  background-color: #388e3c;
+}
+
+.export-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.export-button::before {
+  content: "↓";
+  margin-right: 6px;
+  font-weight: bold;
+}
+
+.pagination-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination-info {
+  margin-top: 10px;
+  color: #666;
+  font-size: 14px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  margin-left: 15px;
+}
+
+.pagination-controls label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #555;
+}
+
+.items-per-page {
+  margin-left: 8px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.mock-data-warning {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  color: #856404;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+.mock-data-warning p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.mock-data-warning code {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.mock-data-warning a {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.generate-button {
+  background-color: #28a745;
+}
+
+.generate-button:hover {
+  background-color: #218838;
+}
+
+/* Make sure the actions column is wide enough for both buttons */
+.schedule-table th:last-child,
+.schedule-table td:last-child {
+  min-width: 220px;
+}
+
+.error-container {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+.error-container p {
+  margin: 5px 0;
+}
+
+.retry-button {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 10px;
+}
+
+.retry-button:hover {
+  background-color: #1976d2;
+} 

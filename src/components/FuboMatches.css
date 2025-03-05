@@ -1,0 +1,131 @@
+.fubo-matches {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.fubo-matches h2 {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 24px;
+}
+
+.matches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.match-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.match-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.match-league, .match-sport {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.match-league {
+  background-color: #e6f7ff;
+  color: #0070f3;
+}
+
+.match-sport {
+  background-color: #f6ffed;
+  color: #52c41a;
+}
+
+.match-title {
+  font-size: 18px;
+  margin: 10px 0;
+  color: #333;
+}
+
+.match-time {
+  margin: 12px 0;
+  padding: 8px 0;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.match-date {
+  font-weight: 600;
+  color: #555;
+}
+
+.match-time-value {
+  color: #888;
+  font-size: 14px;
+}
+
+.match-teams {
+  margin: 12px 0;
+}
+
+.team {
+  padding: 6px 0;
+  font-weight: 500;
+}
+
+.match-venue {
+  font-size: 14px;
+  color: #666;
+  margin-top: 10px;
+}
+
+.venue-label {
+  font-weight: 600;
+}
+
+.loading, .error, .no-matches {
+  padding: 20px;
+  text-align: center;
+  margin: 20px 0;
+  border-radius: 5px;
+}
+
+.error {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+}
+
+.retry-button {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 10px;
+}
+
+.retry-button:hover {
+  background-color: #1976d2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .matches-grid {
+    grid-template-columns: 1fr;
+  }
+} 

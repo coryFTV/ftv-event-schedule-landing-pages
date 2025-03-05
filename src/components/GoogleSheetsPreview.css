@@ -1,0 +1,99 @@
+.google-sheets-preview {
+  width: 100%;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.sheets-header {
+  margin-bottom: 20px;
+}
+
+.sheets-header h2 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 1.8rem;
+  border-bottom: 2px solid #ff3a30;
+  padding-bottom: 10px;
+}
+
+.sheets-info {
+  background-color: #f5f5f5;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.sheets-info p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.sheets-loading, .sheets-error {
+  padding: 20px;
+  text-align: center;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+
+.sheets-loading {
+  background-color: #f0f8ff;
+  color: #0077cc;
+}
+
+.sheets-error {
+  background-color: #fff0f0;
+  color: #cc0000;
+}
+
+.sheets-iframe-container {
+  width: 100%;
+  height: 600px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.sheets-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.sheets-instructions {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 4px;
+  margin-top: 20px;
+}
+
+.sheets-instructions h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+}
+
+.sheets-instructions ol {
+  padding-left: 20px;
+}
+
+.sheets-instructions li {
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.sheets-note {
+  font-style: italic;
+  color: #666;
+  margin-top: 15px;
+}
+
+@media (max-width: 768px) {
+  .sheets-iframe-container {
+    height: 400px;
+  }
+} 

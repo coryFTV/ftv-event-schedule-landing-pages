@@ -1,0 +1,164 @@
+.sheets-explorer {
+  width: 100%;
+  padding: 20px;
+}
+
+.sheets-explorer h1 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  border-bottom: 2px solid #ff3a30;
+  padding-bottom: 10px;
+}
+
+.sheets-explorer h2 {
+  color: #333;
+  margin: 30px 0 15px;
+  font-size: 1.4rem;
+}
+
+.sheets-explorer-form {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.view-button, .save-button, .load-button, .remove-button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.view-button {
+  background-color: #0099ff;
+  color: white;
+}
+
+.view-button:hover {
+  background-color: #0077cc;
+}
+
+.save-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+.save-button:hover {
+  background-color: #388e3c;
+}
+
+.save-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.saved-sheets {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.saved-sheets-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.saved-sheet-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.saved-sheet-item:last-child {
+  border-bottom: none;
+}
+
+.saved-sheet-info h3 {
+  margin: 0 0 5px;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.saved-sheet-info p {
+  margin: 3px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.saved-sheet-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.load-button {
+  background-color: #0099ff;
+  color: white;
+}
+
+.load-button:hover {
+  background-color: #0077cc;
+}
+
+.remove-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.remove-button:hover {
+  background-color: #d32f2f;
+}
+
+.no-saved-sheets {
+  color: #666;
+  font-style: italic;
+}
+
+.sheet-preview-container {
+  margin-top: 30px;
+}
+
+@media (max-width: 768px) {
+  .saved-sheet-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .saved-sheet-actions {
+    margin-top: 10px;
+    align-self: flex-end;
+  }
+} 

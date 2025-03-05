@@ -1,0 +1,39 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f9f9f9;
+}
+
+.content {
+  flex: 1;
+  padding: 0;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.loading-container, .error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+}
+
+.loading-container {
+  color: #666;
+}
+
+.error-container {
+  color: #d32f2f;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 0;
+  }
+} 
