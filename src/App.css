@@ -25,14 +25,20 @@ body {
 }
 
 /* Main content area */
-.content {
+main {
   flex: 1;
   padding: 32px;
-  margin-left: 280px; /* Match sidebar width */
-  width: calc(100% - 280px);
+  margin-left: 250px; /* Match sidebar width */
+  width: calc(100% - 250px);
   background-color: #f9fafb;
   min-height: 100vh;
   transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.content {
+  width: 100%;
 }
 
 /* Card styling for content sections */
@@ -172,7 +178,7 @@ label {
   align-items: center;
   height: 100vh;
   font-size: 1.1rem;
-  margin-left: 280px; /* Match sidebar width */
+  margin-left: 250px; /* Match sidebar width */
 }
 
 .loading-container {
@@ -201,7 +207,7 @@ label {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .content {
+  main {
     margin-left: 0;
     width: 100%;
     padding: 16px;

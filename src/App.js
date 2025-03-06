@@ -12,51 +12,9 @@ import './App.css';
 
 function App() {
   const [data, setData] = useState(null);
-  const [fuboData, setFuboData] = useState(null);
-  const [combinedData, setCombinedData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Fetch data from the original source
-  useEffect(() => {
-    // Use the CORS proxy for all environments
-    const apiUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:3001/test-metadata'  // Local proxy for development
-      : '/test-metadata';  // Proxy in production
-    
-    console.log(`Fetching matches data from: ${apiUrl}`);
-    
-    fetch(apiUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Network response was not ok: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (Array.isArray(data)) {
-          console.log(`Loaded ${data.length} matches from original source`);
-          setData(data);
-        } else if (data && data.matches && Array.isArray(data.matches)) {
-          // Handle case where data is wrapped in a matches property
-          console.log(`Loaded ${data.matches.length} matches from original source`);
-          setData(data.matches);
-        } else {
-          console.warn('Original source data is not an array:', data);
-          setData([]);
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching matches data:', error);
-        setError(`Failed to load matches: ${error.message}`);
-      });
-  }, []);
-  
+
   // Fetch data from the Fubo TV API
   useEffect(() => {
     const fetchFuboData = async () => {
@@ -66,16 +24,16 @@ function App() {
         
         if (Array.isArray(matches) && matches.length > 0) {
           console.log(`Successfully loaded ${matches.length} matches from Fubo TV API`);
-          setFuboData(matches);
+          setData(matches);
         } else {
           console.warn('Fubo TV API returned empty or invalid data');
           setError('Failed to load matches from Fubo TV API');
-          setFuboData([]);
+          setData([]);
         }
       } catch (error) {
         console.error('Error fetching Fubo TV matches:', error);
         setError(`Failed to load matches: ${error.message}`);
-        setFuboData([]);
+        setData([]);
       } finally {
         setLoading(false);
       }
@@ -83,130 +41,32 @@ function App() {
     
     fetchFuboData();
   }, []);
-  
-  // Combine data from both sources
-  useEffect(() => {
-    // Make sure data is an array before trying to spread it
-    if (data) {
-      let combined = Array.isArray(data) ? [...data] : [];
-      
-      // Add Fubo TV data if available
-      if (fuboData && Array.isArray(fuboData) && fuboData.length > 0) {
-        // Add a source field to identify where the data came from
-        const fuboDataWithSource = fuboData.map(match => ({
-          ...match,
-          source: 'fubo_api'
-        }));
-        
-        // Add a source field to the original data
-        const originalDataWithSource = combined.map(match => ({
-          ...match,
-          source: 'original'
-        }));
-        
-        // Combine both datasets
-        combined = [...originalDataWithSource, ...fuboDataWithSource];
-        console.log(`Combined data has ${combined.length} matches`);
-      } else if (combined.length > 0) {
-        // If we only have original data, still add the source field
-        combined = combined.map(match => ({
-          ...match,
-          source: 'original'
-        }));
-        console.log(`Only original data available with ${combined.length} matches`);
-      } else {
-        console.warn('No data available from either source');
-      }
-      
-      setCombinedData(combined);
-      setLoading(false);
-    }
-  }, [data, fuboData]);
-  
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <span>Loading content...</span>
-      </div>
-    );
-  }
 
-  if (error) {
-    return (
-      <div className="error-container">
-        <h2>Something went wrong</h2>
-        <p>{error}</p>
-        <button className="btn" onClick={() => window.location.reload()}>Try Again</button>
-      </div>
-    );
-  }
-  
   return (
     <Router>
       <div className="app">
         <Navigation />
-        <main className="content">
+        <main>
           <Routes>
-            {/* Main routes */}
             <Route 
               path="/" 
               element={<ScheduleView 
-                data={combinedData} 
+                data={data} 
                 loading={loading} 
                 error={error} 
-                filter={{type: 'all'}} 
+                filter={{}} 
                 title="Full Live Sports Schedule"
               />} 
             />
-            <Route 
-              path="/key-events" 
-              element={<KeyEventsView />} 
-            />
-            <Route 
-              path="/sheets-explorer" 
-              element={<SheetsExplorer />} 
-            />
-            <Route 
-              path="/rsn-coverage" 
-              element={<ScheduleView 
-                data={combinedData} 
-                loading={loading} 
-                error={error} 
-                filter={{type: 'rsn'}} 
-                title="RSN Coverage by League"
-              />} 
-            />
-            <Route 
-              path="/networks" 
-              element={<ScheduleView 
-                data={combinedData} 
-                loading={loading} 
-                error={error} 
-                filter={{type: 'networks'}} 
-                title="Master Network List"
-              />} 
-            />
-            <Route 
-              path="/landing-pages" 
-              element={<LandingPagesView />} 
-            />
+            <Route path="/key-events" element={<KeyEventsView />} />
+            <Route path="/sheets" element={<SheetsExplorer />} />
+            <Route path="/landing-pages" element={<LandingPagesView />} />
             
             {/* Sport-specific routes */}
             <Route 
-              path="/sport/mlb" 
-              element={<ScheduleView 
-                data={combinedData} 
-                loading={loading} 
-                error={error} 
-                filter={{type: 'sport', value: 'baseball'}} 
-                title="MLB on Fubo"
-              />} 
-            />
-            <Route 
               path="/sport/soccer" 
               element={<ScheduleView 
-                data={combinedData} 
+                data={data} 
                 loading={loading} 
                 error={error} 
                 filter={{type: 'sport', value: 'soccer'}} 
@@ -216,7 +76,7 @@ function App() {
             <Route 
               path="/sport/nfl" 
               element={<ScheduleView 
-                data={combinedData} 
+                data={data} 
                 loading={loading} 
                 error={error} 
                 filter={{type: 'sport', value: 'football'}} 
@@ -226,7 +86,7 @@ function App() {
             <Route 
               path="/sport/nba" 
               element={<ScheduleView 
-                data={combinedData} 
+                data={data} 
                 loading={loading} 
                 error={error} 
                 filter={{type: 'sport', value: 'basketball'}} 
@@ -236,7 +96,7 @@ function App() {
             <Route 
               path="/sport/nhl" 
               element={<ScheduleView 
-                data={combinedData} 
+                data={data} 
                 loading={loading} 
                 error={error} 
                 filter={{type: 'sport', value: 'hockey'}} 
@@ -246,7 +106,7 @@ function App() {
             <Route 
               path="/sport/college-basketball" 
               element={<ScheduleView 
-                data={combinedData} 
+                data={data} 
                 loading={loading} 
                 error={error} 
                 filter={{type: 'league', value: 'college basketball'}} 
@@ -256,7 +116,7 @@ function App() {
             <Route 
               path="/sport/college-football" 
               element={<ScheduleView 
-                data={combinedData} 
+                data={data} 
                 loading={loading} 
                 error={error} 
                 filter={{type: 'league', value: 'college football'}} 
@@ -266,7 +126,7 @@ function App() {
             <Route 
               path="/sport/canada" 
               element={<ScheduleView 
-                data={combinedData} 
+                data={data} 
                 loading={loading} 
                 error={error} 
                 filter={{type: 'country', value: 'CA'}} 
@@ -276,7 +136,7 @@ function App() {
             <Route 
               path="/sport/cricket" 
               element={<ScheduleView 
-                data={combinedData} 
+                data={data} 
                 loading={loading} 
                 error={error} 
                 filter={{type: 'sport', value: 'cricket'}} 
@@ -288,7 +148,7 @@ function App() {
             <Route 
               path="/entertainment" 
               element={<ScheduleView 
-                data={combinedData} 
+                data={data} 
                 loading={loading} 
                 error={error} 
                 filter={{type: 'category', value: 'entertainment'}} 
@@ -298,7 +158,7 @@ function App() {
             <Route 
               path="/latino-sports" 
               element={<ScheduleView 
-                data={combinedData} 
+                data={data} 
                 loading={loading} 
                 error={error} 
                 filter={{type: 'latino', value: 'sports'}} 
@@ -308,7 +168,7 @@ function App() {
             <Route 
               path="/latino-entertainment" 
               element={<ScheduleView 
-                data={combinedData} 
+                data={data} 
                 loading={loading} 
                 error={error} 
                 filter={{type: 'latino', value: 'entertainment'}} 
@@ -320,7 +180,7 @@ function App() {
             <Route 
               path="/local" 
               element={<ScheduleView 
-                data={combinedData} 
+                data={data} 
                 loading={loading} 
                 error={error} 
                 filter={{type: 'regional', value: true}} 

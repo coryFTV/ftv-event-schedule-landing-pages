@@ -1,151 +1,41 @@
 /**
- * Utility functions for processing data from different sources
+ * Utility functions for processing data
  */
 
 /**
- * Normalizes data from different sources into a consistent format
- * @param {Array} data - Raw data from any source
- * @param {string} source - Source of the data ('fubo' or 'impact')
- * @returns {Array} - Normalized data
+ * Normalizes data into a consistent format
+ * @param {Array} data - Raw data from API
+ * @returns {Array} Normalized data
  */
-export function normalizeData(data, source) {
+export function normalizeData(data) {
   if (!data || !Array.isArray(data)) {
-    console.warn('Invalid data provided to normalizeData:', data);
+    console.warn('Invalid data received for normalization');
     return [];
   }
-
-  console.log(`Normalizing ${data.length} items from ${source} source`);
-
-  switch (source) {
-    case 'fubo':
-      return normalizeFuboData(data);
-    case 'impact':
-      return normalizeImpactData(data);
-    default:
-      // Try to detect the source based on data structure
-      if (data.length > 0) {
-        if (data[0].hasOwnProperty('SportType') || data[0].hasOwnProperty('sportType')) {
-          return normalizeFuboData(data);
-        } else if (data[0].hasOwnProperty('AdType') || data[0].hasOwnProperty('adType')) {
-          return normalizeImpactData(data);
-        }
-      }
-      console.warn('Unknown data source, attempting generic normalization');
-      return data.map(item => normalizeGeneric(item));
-  }
-}
-
-/**
- * Normalizes Fubo TV data
- * @param {Array} data - Raw Fubo TV data
- * @returns {Array} - Normalized data
- */
-function normalizeFuboData(data) {
-  return data.map(match => ({
-    id: match.id || match.Id || String(Math.random()).slice(2, 10),
-    title: match.title || match.Title || match.name || match.Name || 'Untitled Match',
-    description: match.description || match.Description || '',
-    landingPageUrl: match.url || match.Url || match.landingPage || match.LandingPage || '',
+  
+  console.log(`Normalizing ${data.length} items from Fubo API`);
+  
+  return data.map(item => ({
+    id: item.id || '',
+    title: item.title || item.Title || item.name || item.Name || 'Untitled Match',
+    description: item.description || item.Description || '',
+    landingPageUrl: item.url || item.Url || item.landingPage || item.LandingPage || '',
     adType: 'Sports Match',
-    campaignId: match.campaignId || match.CampaignId || '',
-    campaignName: match.campaignName || match.CampaignName || 'Sports Campaign',
-    dateCreated: match.dateCreated || match.DateCreated || new Date().toISOString(),
-    dateLastUpdated: match.dateLastUpdated || match.DateLastUpdated || new Date().toISOString(),
+    campaignId: item.campaignId || item.CampaignId || '',
+    campaignName: item.campaignName || item.CampaignName || 'Sports Campaign',
+    dateCreated: item.dateCreated || item.DateCreated || new Date().toISOString(),
+    dateLastUpdated: item.dateLastUpdated || item.DateLastUpdated || new Date().toISOString(),
     mobileReady: true,
-    dealId: match.dealId || match.DealId || '',
-    dealName: match.dealName || match.DealName || '',
-    dealDescription: match.dealDescription || match.DealDescription || '',
-    // Fubo TV specific fields
-    sportType: match.sportType || match.SportType || '',
-    homeTeam: match.homeTeam || match.HomeTeam || '',
-    awayTeam: match.awayTeam || match.AwayTeam || '',
-    startTime: match.startTime || match.StartTime || '',
-    endTime: match.endTime || match.EndTime || '',
-    venue: match.venue || match.Venue || '',
-    // Source tracking
-    dataSource: 'fubo'
+    dealId: item.dealId || item.DealId || '',
+    dealName: item.dealName || item.DealName || '',
+    dealDescription: item.dealDescription || item.DealDescription || '',
+    sportType: item.sportType || item.SportType || '',
+    homeTeam: item.homeTeam || item.HomeTeam || '',
+    awayTeam: item.awayTeam || item.AwayTeam || '',
+    startTime: item.startTime || item.StartTime || '',
+    endTime: item.endTime || item.EndTime || '',
+    venue: item.venue || item.Venue || ''
   }));
-}
-
-/**
- * Normalizes Impact Radius data
- * @param {Array} data - Raw Impact Radius data
- * @returns {Array} - Normalized data
- */
-function normalizeImpactData(data) {
-  return data.map(page => ({
-    id: page.Id || page.id || String(Math.random()).slice(2, 10),
-    title: page.Name || page.name || 'Untitled Page',
-    description: page.Description || page.description || '',
-    landingPageUrl: page.LandingPage || page.landingPage || page.landingPageUrl || '',
-    adType: page.AdType || page.adType || 'Unknown',
-    campaignId: page.CampaignId || page.campaignId || '',
-    campaignName: page.CampaignName || page.campaignName || '',
-    dateCreated: page.DateCreated || page.dateCreated || new Date().toISOString(),
-    dateLastUpdated: page.DateLastUpdated || page.dateLastUpdated || new Date().toISOString(),
-    mobileReady: page.MobileReady === 'true' || page.mobileReady === true,
-    dealId: page.DealId || page.dealId || '',
-    dealName: page.DealName || page.dealName || '',
-    dealDescription: page.DealDescription || page.dealDescription || '',
-    // Source tracking
-    dataSource: 'impact'
-  }));
-}
-
-/**
- * Generic normalization for unknown data structures
- * @param {Object} item - Raw data item
- * @returns {Object} - Normalized item
- */
-function normalizeGeneric(item) {
-  // Create a normalized object with all possible field names
-  const normalized = {};
-  
-  // Map of common field names and their possible variations
-  const fieldMappings = {
-    id: ['id', 'Id', '_id', 'ID'],
-    title: ['title', 'Title', 'name', 'Name'],
-    description: ['description', 'Description', 'desc', 'Desc'],
-    landingPageUrl: ['landingPageUrl', 'LandingPageUrl', 'landingPage', 'LandingPage', 'url', 'Url'],
-    adType: ['adType', 'AdType', 'type', 'Type'],
-    campaignId: ['campaignId', 'CampaignId'],
-    campaignName: ['campaignName', 'CampaignName'],
-    dateCreated: ['dateCreated', 'DateCreated', 'created', 'Created', 'createdAt', 'CreatedAt'],
-    dateLastUpdated: ['dateLastUpdated', 'DateLastUpdated', 'updated', 'Updated', 'updatedAt', 'UpdatedAt'],
-    mobileReady: ['mobileReady', 'MobileReady'],
-    dealId: ['dealId', 'DealId'],
-    dealName: ['dealName', 'DealName'],
-    dealDescription: ['dealDescription', 'DealDescription'],
-    // Sports specific fields
-    sportType: ['sportType', 'SportType', 'sport', 'Sport'],
-    homeTeam: ['homeTeam', 'HomeTeam', 'home', 'Home'],
-    awayTeam: ['awayTeam', 'AwayTeam', 'away', 'Away'],
-    startTime: ['startTime', 'StartTime', 'start', 'Start'],
-    endTime: ['endTime', 'EndTime', 'end', 'End'],
-    venue: ['venue', 'Venue', 'location', 'Location']
-  };
-  
-  // For each field, try all possible variations
-  Object.entries(fieldMappings).forEach(([normalizedField, possibleFields]) => {
-    for (const field of possibleFields) {
-      if (item[field] !== undefined) {
-        normalized[normalizedField] = item[field];
-        break;
-      }
-    }
-  });
-  
-  // Ensure required fields have default values
-  normalized.id = normalized.id || String(Math.random()).slice(2, 10);
-  normalized.title = normalized.title || 'Untitled';
-  normalized.description = normalized.description || '';
-  normalized.landingPageUrl = normalized.landingPageUrl || '';
-  normalized.adType = normalized.adType || 'Unknown';
-  normalized.dateCreated = normalized.dateCreated || new Date().toISOString();
-  normalized.dateLastUpdated = normalized.dateLastUpdated || new Date().toISOString();
-  normalized.dataSource = 'unknown';
-  
-  return normalized;
 }
 
 /**

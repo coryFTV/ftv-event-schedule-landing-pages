@@ -4,7 +4,7 @@ import { convertToEasternTime, encodeForURL } from '../utils/helpers';
 import URLBuilder from './URLBuilder';
 import './ScheduleView.css';
 
-function ScheduleView({ data, loading, error, filter, title }) {
+function ScheduleView({ data, loading, error, filter = {}, title }) {
   const [filteredData, setFilteredData] = useState([]);
   const [searchParams] = useSearchParams();
   const [partnerParams, setPartnerParams] = useState({});
@@ -29,15 +29,15 @@ function ScheduleView({ data, loading, error, filter, title }) {
     // Apply filters based on the filter prop
     if (filter.type === 'regional' && filter.value === true) {
       filtered = filtered.filter(match => 
-        match.regionalRestrictions === true || match.isRegional === true
+        (match.regionalRestrictions === true) || (match.isRegional === true)
       );
     } else if (filter.type === 'sport' && filter.value) {
       filtered = filtered.filter(match => 
-        match.sport.toLowerCase() === filter.value.toLowerCase()
+        (match.sport && match.sport.toLowerCase() === filter.value.toLowerCase())
       );
     } else if (filter.type === 'league' && filter.value) {
       filtered = filtered.filter(match => 
-        match.league && match.league.toLowerCase().includes(filter.value.toLowerCase())
+        (match.league && match.league.toLowerCase().includes(filter.value.toLowerCase()))
       );
     } else if (filter.type === 'country' && filter.value) {
       filtered = filtered.filter(match => 
@@ -53,9 +53,9 @@ function ScheduleView({ data, loading, error, filter, title }) {
     } else if (filter.type === 'latino' && filter.value) {
       // For Latino content
       filtered = filtered.filter(match => 
-        match.network && match.network.toLowerCase().includes('telemundo') || 
-        match.network && match.network.toLowerCase().includes('univision') ||
-        match.network && match.network.toLowerCase().includes('deportes')
+        (match.network && match.network.toLowerCase().includes('telemundo')) || 
+        (match.network && match.network.toLowerCase().includes('univision')) ||
+        (match.network && match.network.toLowerCase().includes('deportes'))
       );
       
       // Further filter by sports or entertainment
@@ -146,27 +146,6 @@ function ScheduleView({ data, loading, error, filter, title }) {
     setFilteredData(filtered);
   }, [data, filter, searchTerm, sortConfig]);
   
-  const buildCustomUrl = (match) => {
-    // Handle both old and new data formats
-    const league = match.league || match.sport;
-    const sharedId = encodeForURL(league) + "_" + encodeForURL(match.title);
-    let url = match.url || match.networkUrl || `https://www.fubo.tv/welcome/sports/${match.sport.toLowerCase()}`;
-    
-    // Add sharedid parameter if not already present
-    if (!url.includes('sharedid=')) {
-      url += (url.includes('?') ? '&' : '?') + "sharedid=" + sharedId;
-    }
-    
-    // Add partner-specific parameters
-    Object.entries(partnerParams).forEach(([key, value]) => {
-      if (!url.includes(key + '=')) {
-        url += `&${key}=${value}`;
-      }
-    });
-    
-    return url;
-  };
-  
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -235,9 +214,6 @@ function ScheduleView({ data, loading, error, filter, title }) {
               </th>
               <th>Regional</th>
               <th>URL</th>
-              <th onClick={() => handleSort('source')}>
-                Source{getSortIndicator('source')}
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -263,17 +239,12 @@ function ScheduleView({ data, loading, error, filter, title }) {
                         Create URL
                       </button>
                     </td>
-                    <td>
-                      <span className={`source-badge ${match.source === 'fubo_api' ? 'source-fubo' : 'source-original'}`}>
-                        {match.source === 'fubo_api' ? 'Fubo API' : 'Original'}
-                      </span>
-                    </td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan="9" className="no-results">
+                <td colSpan="8" className="no-results">
                   No events found matching your criteria
                 </td>
               </tr>
