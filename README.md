@@ -8,6 +8,7 @@ This application serves as a comprehensive resource for partners and editors to 
 
 This self-service tool allows editors to:
 - View all live sports events on Fubo
+- Browse movies and TV series available on Fubo
 - Filter events by sport type, regional availability, and more
 - Generate customized affiliate URLs for content
 - Access landing pages with proper tracking parameters
@@ -16,6 +17,7 @@ This self-service tool allows editors to:
 ### Features
 
 - **Full Live Sports Schedule**: Complete schedule of all live events on Fubo, updated daily
+- **Movies and TV Series Catalog**: Access to Fubo's complete library of movies and TV series
 - **Sport-Specific Filtering**: Quick access to events by sport (MLB, Soccer, NFL, NBA, NHL, etc.)
 - **Regional Content Filtering**: Filter for local/regional events
 - **URL Customization**: Generate affiliate links with proper tracking parameters
@@ -24,13 +26,20 @@ This self-service tool allows editors to:
 ### Getting Started
 
 1. Navigate to the main dashboard
-2. Use the navigation to access specific sports or views
-3. Click "Watch" on any event to generate a customized affiliate URL
+2. Use the navigation to access specific sports, movies, TV series, or views
+3. Click "Watch" on any content to generate a customized affiliate URL
 4. Use the Partner Configuration page to set default parameters
 
 ### Technical Details
 
-This application is built with React and uses a JSON API to fetch the latest event data. All URLs are automatically generated with proper tracking parameters based on your partner configuration.
+This application is built with React and uses JSON APIs to fetch the latest event, movie, and TV series data. All URLs are automatically generated with proper tracking parameters based on your partner configuration.
+
+### Data Sources
+
+The application fetches data from the following endpoints:
+- Sports events: Internal Fubo API
+- Movies: https://metadata-feeds.fubo.tv/Test/movies.json
+- TV Series: https://metadata-feeds.fubo.tv/Test/series.json
 
 ### Impact Radius API Integration
 

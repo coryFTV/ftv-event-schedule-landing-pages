@@ -17,7 +17,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "proxy": "node cors-proxy.js",
-    "dev": "concurrently \"npm run start\" \"npm run proxy\""
+    "dev": "concurrently \"npm run start\" \"npm run proxy\"",
+    "start-all": "./start-servers.sh"
   },
   "eslintConfig": {
     "extends": [
