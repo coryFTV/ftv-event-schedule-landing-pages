@@ -11,6 +11,14 @@ import {
   getFuboMovies,
   getFuboSeries
 } from './fuboApi';
+import { notifyError, notifyWarning } from './notificationService';
+
+// Mock notification service
+jest.mock('./notificationService', () => ({
+  notifyError: jest.fn(),
+  notifyWarning: jest.fn(),
+  notifySuccess: jest.fn(),
+}));
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -29,6 +37,7 @@ const setupFetchMock = (data, ok = true) => {
 describe('Fubo API Utilities', () => {
   beforeEach(() => {
     global.fetch.mockClear();
+    jest.clearAllMocks();
   });
 
   describe('fetchFuboData', () => {
@@ -55,6 +64,7 @@ describe('Fubo API Utilities', () => {
 
       await expect(fetchFuboData('matches')).rejects.toThrow('Network error');
       expect(fetch).toHaveBeenCalledTimes(1);
+      expect(notifyError).toHaveBeenCalled();
     });
 
     it('should handle API errors', async () => {
@@ -62,6 +72,21 @@ describe('Fubo API Utilities', () => {
 
       await expect(fetchFuboData('matches')).rejects.toThrow('HTTP error');
       expect(fetch).toHaveBeenCalledTimes(1);
+      expect(notifyError).toHaveBeenCalled();
+    });
+
+    it('should handle retry logic on temporary failures', async () => {
+      // First attempt fails
+      global.fetch.mockImplementationOnce(() => Promise.reject(new Error('Temporary error')));
+      
+      // Second attempt succeeds
+      const mockData = [{ id: 1 }];
+      setupFetchMock(mockData);
+      
+      const result = await fetchFuboData('matches');
+      expect(result).toEqual(mockData);
+      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(notifyWarning).toHaveBeenCalled();
     });
   });
 
@@ -110,6 +135,7 @@ describe('Fubo API Utilities', () => {
       expect(result[0].description).toBe('A test movie');
       expect(result[0].genre).toBe('Action, Comedy');
       expect(result[0].source).toBe('fubo_movies');
+      expect(result[0].league_id).toBe('movies');
     });
 
     it('should handle empty or invalid input', () => {
@@ -126,7 +152,7 @@ describe('Fubo API Utilities', () => {
         {
           id: '123',
           title: 'Test Series',
-          description: 'A test series',
+          shortDescription: 'A test series',
           genres: ['Drama', 'Thriller']
         }
       ];
@@ -138,6 +164,7 @@ describe('Fubo API Utilities', () => {
       expect(result[0].description).toBe('A test series');
       expect(result[0].genre).toBe('Drama, Thriller');
       expect(result[0].source).toBe('fubo_series');
+      expect(result[0].league_id).toBe('series');
     });
 
     it('should handle empty or invalid input', () => {
@@ -174,6 +201,13 @@ describe('Fubo API Utilities', () => {
       expect(result[0].title).toBe('Match 1');
       expect(result[0].sport).toBe('soccer');
     });
+
+    it('should handle fetch errors and show notifications', async () => {
+      global.fetch.mockImplementationOnce(() => Promise.reject(new Error('API error')));
+
+      await expect(getFuboMatches()).rejects.toThrow('API error');
+      expect(notifyError).toHaveBeenCalledWith(expect.stringContaining('Error fetching matches'));
+    });
   });
 
   describe('getFuboMovies', () => {
@@ -202,6 +236,13 @@ describe('Fubo API Utilities', () => {
       expect(result[0].title).toBe('Movie 1');
       expect(result[0].genre).toBe('Action');
     });
+
+    it('should handle fetch errors and show notifications', async () => {
+      global.fetch.mockImplementationOnce(() => Promise.reject(new Error('API error')));
+
+      await expect(getFuboMovies()).rejects.toThrow('API error');
+      expect(notifyError).toHaveBeenCalledWith(expect.stringContaining('Error fetching movies'));
+    });
   });
 
   describe('getFuboSeries', () => {
@@ -229,6 +270,13 @@ describe('Fubo API Utilities', () => {
       expect(result).toHaveLength(1);
       expect(result[0].title).toBe('Series 1');
       expect(result[0].genre).toBe('Drama');
+    });
+
+    it('should handle fetch errors and show notifications', async () => {
+      global.fetch.mockImplementationOnce(() => Promise.reject(new Error('API error')));
+
+      await expect(getFuboSeries()).rejects.toThrow('API error');
+      expect(notifyError).toHaveBeenCalledWith(expect.stringContaining('Error fetching series'));
     });
   });
 }); 

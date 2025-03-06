@@ -1,6 +1,7 @@
 /**
  * Consolidated API utility for fetching all Fubo TV data (sports, movies, series)
  */
+import { notifyError, notifyWarning } from './notificationService';
 
 /**
  * Fetches data from the API with retry logic
@@ -39,11 +40,10 @@ async function fetchWithRetry(url, retries = 3, initialDelay = 1000) {
         throw fetchError;
       }
     } catch (error) {
-      console.warn(`Fetch attempt ${attempt}/${retries} failed for ${url}:`, error.message);
+      notifyWarning(`Fetch attempt ${attempt}/${retries} failed for ${url}: ${error.message}`);
       lastError = error;
 
       if (attempt < retries) {
-        console.log(`Waiting ${delay}ms before retry...`);
         await new Promise(resolve => setTimeout(resolve, delay));
         delay *= 2; // Exponential backoff
       }
@@ -65,20 +65,12 @@ export async function fetchFuboData(endpoint) {
         ? `http://localhost:3001/${endpoint}.json`
         : `/${endpoint}.json`;
 
-    console.log(`Attempting to fetch ${endpoint} from Fubo TV API: ${url}`);
-
     const data = await fetchWithRetry(url);
-    console.log(
-      `Fubo TV ${endpoint} API fetch successful, data structure:`,
-      typeof data,
-      Array.isArray(data) ? `Array with ${data.length} items` : 'Not an array'
-    );
 
     // Handle different data structures
     if (Array.isArray(data)) {
       return data;
     } else if (data && data[endpoint] && Array.isArray(data[endpoint])) {
-      console.log(`Found ${endpoint} property with ${data[endpoint].length} items`);
       return data[endpoint];
     } else if (endpoint === 'series' && data && typeof data === 'object') {
       // Special handling for series data which might have inconsistent structure
@@ -86,13 +78,11 @@ export async function fetchFuboData(endpoint) {
       if (possibleArrays.length > 0) {
         // Use the largest array found
         const largestArray = possibleArrays.reduce((a, b) => (a.length > b.length ? a : b));
-        console.log(`Found potential series array with ${largestArray.length} items`);
         return largestArray;
       }
 
       // If no arrays found, convert object to array as fallback
       if (Object.keys(data).length > 0) {
-        console.log('Converting object to array as fallback');
         return [data];
       }
     }
@@ -100,11 +90,11 @@ export async function fetchFuboData(endpoint) {
     // If we can't extract data in a standard way, throw an error
     throw new Error(`Unexpected data structure from Fubo TV ${endpoint} API`);
   } catch (error) {
-    console.error(`Error in fetchFuboData for ${endpoint}:`, error);
+    notifyError(`Error in fetchFuboData for ${endpoint}: ${error.message}`);
     
     // For matches, we can return mock data in development
     if (endpoint === 'matches' && process.env.NODE_ENV === 'development') {
-      console.warn('Using mock match data for development');
+      notifyWarning('Using mock match data for development');
       return getMockMatchData();
     }
     
@@ -248,127 +238,110 @@ export function processMovieData(movies) {
     starttime: movie.licenseWindowStart || new Date().toISOString(),
     sport: 'Movie',
     league: Array.isArray(movie.genres) ? movie.genres[0] : movie.genres || 'Movie',
+    league_id: 'movies',
     source: 'fubo_movies',
   }));
 }
 
 /**
- * Processes raw TV series data from Fubo TV API
- * @param {Array} series - Raw TV series data from API
- * @returns {Array} Processed TV series data
+ * Processes raw series data from Fubo TV API
+ * @param {Array} series - Raw series data from API
+ * @returns {Array} Processed series data
  */
 export function processSeriesData(series) {
   if (!series || !Array.isArray(series)) {
     return [];
   }
 
-  return series
-    .map(show => {
-      if (!show || typeof show !== 'object') {
-        return null;
-      }
-
-      return {
-        id: show.id || show.tmsId || '',
-        title: show.title || show.name || '',
-        description: show.description || show.shortDescription || show.longDescription || '',
-        seasons: show.seasons || show.seasonCount || '',
-        episodes: show.episodes || show.episodeCount || '',
-        genre: Array.isArray(show.genres)
-          ? show.genres.join(', ')
-          : show.genre || show.genres || '',
-        rating: show.rating || show.contentRating || '',
-        creator: Array.isArray(show.creators)
-          ? show.creators.join(', ')
-          : show.creator || show.creators || '',
-        actors: Array.isArray(show.actors) ? show.actors : show.cast || [],
-        thumbnail: show.thumbnail || show.poster || show.image || '',
-        url: show.url || show.deepLink || '',
-        network: show.network || show.channel || '',
-        starttime: show.startTime || show.airDate || new Date().toISOString(),
-        sport: 'TV Series', // For compatibility with sports filtering
-        league: Array.isArray(show.genres)
-          ? show.genres[0]
-          : show.genre || show.genres || 'TV Series',
-        source: 'fubo_series',
-      };
-    })
-    .filter(Boolean); // Remove any null entries
+  return series.map(show => ({
+    id: show.tmsId || show.id || '',
+    title: show.title || '',
+    description: show.shortDescription || show.longDescription || '',
+    releaseYear: show.releaseYear || '',
+    seasons: show.seasons || show.seasonCount || '',
+    genre: Array.isArray(show.genres) ? show.genres.join(', ') : show.genres || '',
+    rating: show.rating || '',
+    creator: Array.isArray(show.creators) ? show.creators.join(', ') : show.creators || '',
+    actors: Array.isArray(show.actors) ? show.actors : [],
+    thumbnail: show.poster || '',
+    url: show.url || show.deepLink || '',
+    network: show.network || '',
+    starttime: show.licenseWindowStart || new Date().toISOString(),
+    sport: 'Series',
+    league: Array.isArray(show.genres) ? show.genres[0] : show.genres || 'Series',
+    league_id: 'series',
+    source: 'fubo_series',
+  }));
 }
 
 /**
- * Fetches and processes sports match data
- * @param {Object} options - Options for filtering data
+ * Generic function to fetch and process data from Fubo TV API
+ * @param {string} endpoint - The endpoint to fetch from (matches, movies, series)
+ * @param {Function} processFn - Function to process the data
+ * @param {Object} options - Options for filtering the data
+ * @returns {Promise<Array>} Processed data
+ */
+async function getFuboData(endpoint, processFn, options = {}) {
+  try {
+    const data = await fetchFuboData(endpoint);
+    const processedData = processFn(data);
+    
+    // Apply filters if provided
+    if (options.filter && typeof options.filter === 'function') {
+      return processedData.filter(options.filter);
+    }
+    
+    return processedData;
+  } catch (error) {
+    notifyError(`Error fetching ${endpoint}: ${error.message}`);
+    throw error;
+  }
+}
+
+/**
+ * Fetches and processes match data from Fubo TV API
+ * @param {Object} options - Options for filtering the data
  * @returns {Promise<Array>} Processed match data
  */
 export async function getFuboMatches(options = {}) {
-  const rawData = await fetchFuboData('matches');
-  let processedData = processMatchData(rawData);
-
-  // Apply filters if provided
-  if (options.sport) {
-    processedData = processedData.filter(
-      match => match.sport && match.sport.toLowerCase() === options.sport.toLowerCase()
-    );
-  }
-
-  if (options.league) {
-    processedData = processedData.filter(
-      match => match.league && match.league.toLowerCase() === options.league.toLowerCase()
-    );
-  }
-
-  if (options.startDate) {
-    const startDate = new Date(options.startDate);
-    processedData = processedData.filter(match => {
-      const matchDate = new Date(match.starttime || match.startTime);
-      return !isNaN(matchDate.getTime()) && matchDate >= startDate;
-    });
-  }
-
-  return processedData;
+  const filter = item => {
+    if (options.sport && item.sport) {
+      return item.sport.toLowerCase() === options.sport.toLowerCase();
+    }
+    return true;
+  };
+  
+  return getFuboData('matches', processMatchData, { filter });
 }
 
 /**
- * Fetches and processes movie data
- * @param {Object} options - Options for filtering data
+ * Fetches and processes movie data from Fubo TV API
+ * @param {Object} options - Options for filtering the data
  * @returns {Promise<Array>} Processed movie data
  */
 export async function getFuboMovies(options = {}) {
-  const rawData = await fetchFuboData('movies');
-  let processedData = processMovieData(rawData);
-
-  // Apply filters if provided
-  if (options.genre) {
-    processedData = processedData.filter(
-      movie => movie.genre && movie.genre.toLowerCase().includes(options.genre.toLowerCase())
-    );
-  }
-
-  if (options.releaseYear) {
-    processedData = processedData.filter(
-      movie => movie.releaseYear && movie.releaseYear === options.releaseYear
-    );
-  }
-
-  return processedData;
+  const filter = item => {
+    if (options.genre && item.genre) {
+      return item.genre.toLowerCase().includes(options.genre.toLowerCase());
+    }
+    return true;
+  };
+  
+  return getFuboData('movies', processMovieData, { filter });
 }
 
 /**
- * Fetches and processes TV series data
- * @param {Object} options - Options for filtering data
- * @returns {Promise<Array>} Processed TV series data
+ * Fetches and processes series data from Fubo TV API
+ * @param {Object} options - Options for filtering the data
+ * @returns {Promise<Array>} Processed series data
  */
 export async function getFuboSeries(options = {}) {
-  const rawData = await fetchFuboData('series');
-  let processedData = processSeriesData(rawData);
-
-  // Apply filters if provided
-  if (options.genre) {
-    processedData = processedData.filter(
-      series => series.genre && series.genre.toLowerCase().includes(options.genre.toLowerCase())
-    );
-  }
-
-  return processedData;
+  const filter = item => {
+    if (options.genre && item.genre) {
+      return item.genre.toLowerCase().includes(options.genre.toLowerCase());
+    }
+    return true;
+  };
+  
+  return getFuboData('series', processSeriesData, { filter });
 } 

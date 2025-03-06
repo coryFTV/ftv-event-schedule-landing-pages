@@ -31,158 +31,100 @@ export const useFuboData = () => {
         setAppState(prev => ({
           ...prev,
           lastAction: 'starting data fetch',
-          dataLoadStatus: {
-            sports: 'loading',
-            movies: 'pending',
-            series: 'pending',
-          },
         }));
 
-        // Fetch sports data
-        try {
-          const matches = await getFuboMatches();
+        // Define data sources to fetch
+        const dataSources = [
+          { 
+            type: 'sports', 
+            fetchFn: getFuboMatches, 
+            setDataFn: setSportsData 
+          },
+          { 
+            type: 'movies', 
+            fetchFn: getFuboMovies, 
+            setDataFn: setMoviesData 
+          },
+          { 
+            type: 'series', 
+            fetchFn: getFuboSeries, 
+            setDataFn: setSeriesData 
+          }
+        ];
 
-          if (Array.isArray(matches) && matches.length > 0) {
-            notifySuccess(`Successfully loaded ${matches.length} matches`);
-            setSportsData(matches);
+        // Fetch all data sources in parallel
+        const results = await Promise.allSettled(
+          dataSources.map(async ({ type, fetchFn }) => {
             setAppState(prev => ({
               ...prev,
+              lastAction: `fetching ${type}`,
               dataLoadStatus: {
                 ...prev.dataLoadStatus,
-                sports: 'success',
+                [type]: 'loading',
               },
             }));
+            
+            return { type, data: await fetchFn() };
+          })
+        );
+
+        // Process results
+        results.forEach(result => {
+          const { type, fetchFn, setDataFn } = dataSources.find(
+            source => source.type === result.value?.type
+          );
+
+          if (result.status === 'fulfilled') {
+            const { data } = result.value;
+            
+            if (Array.isArray(data) && data.length > 0) {
+              notifySuccess(`Successfully loaded ${data.length} ${type}`);
+              dataSources.find(source => source.type === type).setDataFn(data);
+              setAppState(prev => ({
+                ...prev,
+                dataLoadStatus: {
+                  ...prev.dataLoadStatus,
+                  [type]: 'success',
+                },
+              }));
+            } else {
+              notifyWarning(`No ${type} found`);
+              dataSources.find(source => source.type === type).setDataFn([]);
+              setAppState(prev => ({
+                ...prev,
+                dataLoadStatus: {
+                  ...prev.dataLoadStatus,
+                  [type]: 'empty',
+                },
+              }));
+            }
           } else {
-            notifyWarning('No sports matches found');
-            setSportsData([]);
+            notifyError(`Error loading ${type} data: ${result.reason?.message || 'Unknown error'}`);
+            dataSources.find(source => source.type === type).setDataFn([]);
             setAppState(prev => ({
               ...prev,
               dataLoadStatus: {
                 ...prev.dataLoadStatus,
-                sports: 'empty',
+                [type]: 'error',
               },
             }));
           }
-        } catch (sportsError) {
-          notifyError(`Error loading sports data: ${sportsError.message}`);
-          setSportsData([]);
-          setAppState(prev => ({
-            ...prev,
-            dataLoadStatus: {
-              ...prev.dataLoadStatus,
-              sports: 'error',
-            },
-          }));
-        }
-
-        // Update app state
-        setAppState(prev => ({
-          ...prev,
-          lastAction: 'fetching movies',
-          dataLoadStatus: {
-            ...prev.dataLoadStatus,
-            movies: 'loading',
-          },
-        }));
-
-        // Fetch movies data
-        try {
-          const movies = await getFuboMovies();
-
-          if (Array.isArray(movies) && movies.length > 0) {
-            notifySuccess(`Successfully loaded ${movies.length} movies`);
-            setMoviesData(movies);
-            setAppState(prev => ({
-              ...prev,
-              dataLoadStatus: {
-                ...prev.dataLoadStatus,
-                movies: 'success',
-              },
-            }));
-          } else {
-            notifyWarning('No movies found');
-            setMoviesData([]);
-            setAppState(prev => ({
-              ...prev,
-              dataLoadStatus: {
-                ...prev.dataLoadStatus,
-                movies: 'empty',
-              },
-            }));
-          }
-        } catch (moviesError) {
-          notifyError(`Error loading movies data: ${moviesError.message}`);
-          setMoviesData([]);
-          setAppState(prev => ({
-            ...prev,
-            dataLoadStatus: {
-              ...prev.dataLoadStatus,
-              movies: 'error',
-            },
-          }));
-        }
-
-        // Update app state
-        setAppState(prev => ({
-          ...prev,
-          lastAction: 'fetching series',
-          dataLoadStatus: {
-            ...prev.dataLoadStatus,
-            series: 'loading',
-          },
-        }));
-
-        // Fetch series data
-        try {
-          const series = await getFuboSeries();
-
-          if (Array.isArray(series) && series.length > 0) {
-            notifySuccess(`Successfully loaded ${series.length} TV series`);
-            setSeriesData(series);
-            setAppState(prev => ({
-              ...prev,
-              dataLoadStatus: {
-                ...prev.dataLoadStatus,
-                series: 'success',
-              },
-            }));
-          } else {
-            notifyWarning('No TV series found');
-            setSeriesData([]);
-            setAppState(prev => ({
-              ...prev,
-              dataLoadStatus: {
-                ...prev.dataLoadStatus,
-                series: 'empty',
-              },
-            }));
-          }
-        } catch (seriesError) {
-          notifyError(`Error loading series data: ${seriesError.message}`);
-          setSeriesData([]);
-          setAppState(prev => ({
-            ...prev,
-            dataLoadStatus: {
-              ...prev.dataLoadStatus,
-              series: 'error',
-            },
-          }));
-        }
+        });
 
         // Complete loading
         setAppState(prev => ({
           ...prev,
           lastAction: 'data fetch complete',
         }));
-        setLoading(false);
       } catch (error) {
         notifyError(`Error in data fetching process: ${error.message}`);
         setError(error.message || 'An unexpected error occurred');
-        setLoading(false);
         setAppState(prev => ({
           ...prev,
           lastAction: 'error in data fetch',
         }));
+      } finally {
+        setLoading(false);
       }
     };
 

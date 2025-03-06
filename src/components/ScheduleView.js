@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { convertToEasternTime, encodeForURL } from '../utils/helpers';
 import URLBuilder from './URLBuilder';
@@ -12,8 +12,8 @@ function ScheduleView({ data, loading, error, filter = {}, title }) {
   const [sortConfig, setSortConfig] = useState({ key: 'starttime', direction: 'asc' });
   const [selectedMatch, setSelectedMatch] = useState(null);
 
+  // Extract partner params from URL
   useEffect(() => {
-    // Extract partner params from URL
     const params = {};
     for (const [key, value] of searchParams.entries()) {
       params[key] = value;
@@ -21,8 +21,9 @@ function ScheduleView({ data, loading, error, filter = {}, title }) {
     setPartnerParams(params);
   }, [searchParams]);
 
-  useEffect(() => {
-    if (!data || data.length === 0) return;
+  // Memoize the filtering and sorting logic
+  const filterAndSortData = useCallback(() => {
+    if (!data || data.length === 0) return [];
 
     let filtered = [...data];
 
@@ -176,8 +177,13 @@ function ScheduleView({ data, loading, error, filter = {}, title }) {
       });
     }
 
-    setFilteredData(filtered);
+    return filtered;
   }, [data, filter, searchTerm, sortConfig]);
+
+  // Update filtered data when dependencies change
+  useEffect(() => {
+    setFilteredData(filterAndSortData());
+  }, [filterAndSortData]);
 
   const handleSort = key => {
     let direction = 'asc';
