@@ -14,20 +14,18 @@ function ErrorDisplay({ error, retry }) {
         <li>API rate limiting</li>
       </ul>
       {retry && (
-        <button 
-          className="action-button" 
-          onClick={retry}
-        >
+        <button className="action-button" onClick={retry}>
           Try Again
         </button>
       )}
       <div className="error-help">
         <p>
-          <strong>Need help?</strong> Make sure your Account SID and Auth Token are correctly set in the .env file.
+          <strong>Need help?</strong> Make sure your Account SID and Auth Token are correctly set in
+          the .env file.
         </p>
       </div>
     </div>
   );
 }
 
-export default ErrorDisplay; 
+export default ErrorDisplay;

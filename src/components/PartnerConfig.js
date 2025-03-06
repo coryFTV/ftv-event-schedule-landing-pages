@@ -13,9 +13,9 @@ function PartnerConfig() {
     irmp: '',
     sharedIdPrefix: '',
   });
-  
+
   const [savedConfigs, setSavedConfigs] = useState([]);
-  
+
   useEffect(() => {
     // Load saved configurations from localStorage
     const saved = localStorage.getItem('partnerConfigs');
@@ -23,15 +23,15 @@ function PartnerConfig() {
       setSavedConfigs(JSON.parse(saved));
     }
   }, []);
-  
-  const handleChange = (e) => {
+
+  const handleChange = e => {
     const { name, value } = e.target;
     setConfig(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
-  
+
   const saveConfig = () => {
     // Validate that at least one field has a value
     const hasValue = Object.values(config).some(val => val.trim() !== '');
@@ -39,10 +39,10 @@ function PartnerConfig() {
       alert('Please fill in at least one field before saving.');
       return;
     }
-    
+
     const configName = prompt('Enter a name for this configuration:');
     if (!configName) return;
-    
+
     const newConfigs = [...savedConfigs, { ...config, id: Date.now(), name: configName }];
     setSavedConfigs(newConfigs);
     localStorage.setItem('partnerConfigs', JSON.stringify(newConfigs));
@@ -56,22 +56,22 @@ function PartnerConfig() {
       sharedIdPrefix: '',
     });
   };
-  
-  const applyConfig = (savedConfig) => {
+
+  const applyConfig = savedConfig => {
     // Build query string from config
     const params = new URLSearchParams();
-    
+
     Object.entries(savedConfig).forEach(([key, value]) => {
       if (key !== 'id' && key !== 'name' && value) {
         params.append(key, value);
       }
     });
-    
+
     // Navigate to the schedule view with the parameters
     navigate(`/?${params.toString()}`);
   };
-  
-  const deleteConfig = (id) => {
+
+  const deleteConfig = id => {
     const confirmed = window.confirm('Are you sure you want to delete this configuration?');
     if (confirmed) {
       const newConfigs = savedConfigs.filter(config => config.id !== id);
@@ -79,13 +79,13 @@ function PartnerConfig() {
       localStorage.setItem('partnerConfigs', JSON.stringify(newConfigs));
     }
   };
-  
+
   return (
     <div className="partner-config">
       <div className="content-card">
         <h1>Partner Configuration</h1>
         <p>Configure partner parameters for URL generation and tracking.</p>
-        
+
         <div className="config-form">
           <div className="form-row">
             <div className="form-group">
@@ -99,7 +99,7 @@ function PartnerConfig() {
                 placeholder="e.g. partner123"
               />
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="sharedIdPrefix">Shared ID Prefix</label>
               <input
@@ -112,9 +112,9 @@ function PartnerConfig() {
               />
             </div>
           </div>
-          
+
           <div className="form-section-title">UTM Parameters</div>
-          
+
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="utmSource">UTM Source</label>
@@ -127,7 +127,7 @@ function PartnerConfig() {
                 placeholder="e.g. partner_website"
               />
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="utmMedium">UTM Medium</label>
               <input
@@ -139,7 +139,7 @@ function PartnerConfig() {
                 placeholder="e.g. referral"
               />
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="utmCampaign">UTM Campaign</label>
               <input
@@ -152,9 +152,9 @@ function PartnerConfig() {
               />
             </div>
           </div>
-          
+
           <div className="form-section-title">Impact Radius Parameters</div>
-          
+
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="irad">IRAD (Impact Radius Ad ID)</label>
@@ -167,7 +167,7 @@ function PartnerConfig() {
                 placeholder="e.g. 123456"
               />
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="irmp">IRMP (Impact Radius Media Partner)</label>
               <input
@@ -180,7 +180,7 @@ function PartnerConfig() {
               />
             </div>
           </div>
-          
+
           <div className="form-actions">
             <button className="btn" onClick={saveConfig}>
               Save Configuration
@@ -188,10 +188,10 @@ function PartnerConfig() {
           </div>
         </div>
       </div>
-      
+
       <div className="content-card">
         <h2>Saved Configurations</h2>
-        
+
         {savedConfigs.length > 0 ? (
           <div className="saved-configs">
             {savedConfigs.map(savedConfig => (
@@ -224,14 +224,11 @@ function PartnerConfig() {
                   )}
                 </div>
                 <div className="config-card-actions">
-                  <button 
-                    className="btn" 
-                    onClick={() => applyConfig(savedConfig)}
-                  >
+                  <button className="btn" onClick={() => applyConfig(savedConfig)}>
                     Apply
                   </button>
-                  <button 
-                    className="btn btn-secondary" 
+                  <button
+                    className="btn btn-secondary"
                     onClick={() => deleteConfig(savedConfig.id)}
                   >
                     Delete
@@ -241,11 +238,13 @@ function PartnerConfig() {
             ))}
           </div>
         ) : (
-          <p className="no-configs">No saved configurations yet. Create and save a configuration to see it here.</p>
+          <p className="no-configs">
+            No saved configurations yet. Create and save a configuration to see it here.
+          </p>
         )}
       </div>
     </div>
   );
 }
 
-export default PartnerConfig; 
+export default PartnerConfig;

@@ -13,12 +13,12 @@ const FuboMatches = ({ sport, league }) => {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Get matches with optional filters
         const options = {};
         if (sport) options.sport = sport;
         if (league) options.league = league;
-        
+
         const data = await getFuboTvMatches(options);
         setMatches(data);
       } catch (err) {
@@ -41,7 +41,7 @@ const FuboMatches = ({ sport, league }) => {
         const options = {};
         if (sport) options.sport = sport;
         if (league) options.league = league;
-        
+
         const data = await getFuboTvMatches(options);
         setMatches(data);
         setError(null);
@@ -65,10 +65,16 @@ const FuboMatches = ({ sport, league }) => {
       <div className="error">
         <p>{error}</p>
         <p>
-          <strong>Troubleshooting:</strong> Check that the proxy server is running with <code>npm run proxy</code> in a separate terminal.
-          Try accessing <a href="http://localhost:3001/test-metadata" target="_blank" rel="noopener noreferrer">http://localhost:3001/test-metadata</a> directly to test the API connection.
+          <strong>Troubleshooting:</strong> Check that the proxy server is running with{' '}
+          <code>npm run proxy</code> in a separate terminal. Try accessing{' '}
+          <a href="http://localhost:3001/test-metadata" target="_blank" rel="noopener noreferrer">
+            http://localhost:3001/test-metadata
+          </a>{' '}
+          directly to test the API connection.
         </p>
-        <button className="retry-button" onClick={handleRetry}>Retry</button>
+        <button className="retry-button" onClick={handleRetry}>
+          Retry
+        </button>
       </div>
     );
   }
@@ -83,21 +89,21 @@ const FuboMatches = ({ sport, league }) => {
       <div className="matches-grid">
         {matches.map(match => {
           const { datePart, timePart } = convertToEasternTime(match.startTime);
-          
+
           return (
             <div key={match.id} className="match-card">
               <div className="match-header">
                 <span className="match-league">{match.league}</span>
                 <span className="match-sport">{match.sport}</span>
               </div>
-              
+
               <h3 className="match-title">{match.title}</h3>
-              
+
               <div className="match-time">
                 <div className="match-date">{datePart}</div>
                 <div className="match-time-value">{timePart} ET</div>
               </div>
-              
+
               {match.teams && match.teams.length > 0 && (
                 <div className="match-teams">
                   {match.teams.map((team, index) => (
@@ -107,7 +113,7 @@ const FuboMatches = ({ sport, league }) => {
                   ))}
                 </div>
               )}
-              
+
               {match.venue && (
                 <div className="match-venue">
                   <span className="venue-label">Venue:</span> {match.venue}
@@ -121,4 +127,4 @@ const FuboMatches = ({ sport, league }) => {
   );
 };
 
-export default FuboMatches; 
+export default FuboMatches;

@@ -18,7 +18,7 @@ function LandingPagesView() {
       try {
         setLoading(true);
         setError(null);
-        
+
         const matches = await getFuboTvMatches();
         setData(matches);
       } catch (err) {
@@ -49,16 +49,16 @@ function LandingPagesView() {
   const endIndex = startIndex + itemsPerPage;
   const currentData = filteredData.slice(startIndex, endIndex);
 
-  const handlePageChange = (pageNumber) => {
+  const handlePageChange = pageNumber => {
     setCurrentPage(pageNumber);
   };
 
-  const handleSearch = (event) => {
+  const handleSearch = event => {
     setSearchTerm(event.target.value);
     setCurrentPage(1); // Reset to first page when searching
   };
 
-  const openUrlBuilder = (match) => {
+  const openUrlBuilder = match => {
     setSelectedMatch(match);
   };
 
@@ -78,7 +78,7 @@ function LandingPagesView() {
     <div className="landing-pages-container">
       <div className="content-card">
         <h1>Fubo Landing Pages</h1>
-        
+
         <div className="search-container">
           <input
             type="text"
@@ -88,7 +88,7 @@ function LandingPagesView() {
             className="search-input"
           />
         </div>
-        
+
         <div className="results-info">
           Showing {currentData.length} of {filteredData.length} landing pages
         </div>
@@ -114,10 +114,7 @@ function LandingPagesView() {
                   <td>{item.league}</td>
                   <td>{item.network}</td>
                   <td>
-                    <button
-                      className="btn btn-secondary"
-                      onClick={() => openUrlBuilder(item)}
-                    >
+                    <button className="btn btn-secondary" onClick={() => openUrlBuilder(item)}>
                       Create URL
                     </button>
                   </td>
@@ -142,14 +139,9 @@ function LandingPagesView() {
         )}
       </div>
 
-      {selectedMatch && (
-        <URLBuilder
-          match={selectedMatch}
-          onClose={closeUrlBuilder}
-        />
-      )}
+      {selectedMatch && <URLBuilder match={selectedMatch} onClose={closeUrlBuilder} />}
     </div>
   );
 }
 
-export default LandingPagesView; 
+export default LandingPagesView;

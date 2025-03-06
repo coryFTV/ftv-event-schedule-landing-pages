@@ -8,37 +8,42 @@
  */
 export async function fetchFuboTvMatches() {
   try {
-    const url = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:3001/matches.json' 
-      : '/matches.json';
-    
+    const url =
+      process.env.NODE_ENV === 'development'
+        ? 'http://localhost:3001/matches.json'
+        : '/matches.json';
+
     console.log(`Attempting to fetch from Fubo TV API: ${url}`);
-    
+
     // Add timeout to the fetch request
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-    
+
     try {
       const response = await fetch(url, {
         signal: controller.signal,
         headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'no-cache'
-        }
+          Accept: 'application/json',
+          'Cache-Control': 'no-cache',
+        },
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         const errorMessage = `Failed to fetch from Fubo TV API: ${response.status} - ${errorText}`;
         console.error(errorMessage);
         throw new Error(errorMessage);
       }
-      
+
       const data = await response.json();
-      console.log('Fubo TV API fetch successful, data structure:', typeof data, Array.isArray(data) ? `Array with ${data.length} items` : 'Not an array');
-      
+      console.log(
+        'Fubo TV API fetch successful, data structure:',
+        typeof data,
+        Array.isArray(data) ? `Array with ${data.length} items` : 'Not an array'
+      );
+
       // Handle different data structures
       if (Array.isArray(data)) {
         return data;
@@ -53,24 +58,24 @@ export async function fetchFuboTvMatches() {
     } catch (fetchError) {
       clearTimeout(timeoutId);
       console.error('Fetch error:', fetchError);
-      
+
       // If fetch fails, return mock data for development
       if (process.env.NODE_ENV === 'development') {
         console.warn('Using mock data for development');
         return getMockMatchData();
       }
-      
+
       throw fetchError;
     }
   } catch (error) {
     console.error('Error in fetchFuboTvMatches:', error);
-    
+
     // Return mock data as a last resort in development
     if (process.env.NODE_ENV === 'development') {
       console.warn('Using mock data as fallback');
       return getMockMatchData();
     }
-    
+
     throw error;
   }
 }
@@ -100,7 +105,7 @@ function getMockMatchData() {
       country: 'US',
       url: 'https://espn.com/game/1',
       regionalRestrictions: false,
-      source: 'mock_data'
+      source: 'mock_data',
     },
     {
       id: 'mock-2',
@@ -122,7 +127,7 @@ function getMockMatchData() {
       country: 'US',
       url: 'https://tnt.com/game/1',
       regionalRestrictions: false,
-      source: 'mock_data'
+      source: 'mock_data',
     },
     {
       id: 'mock-3',
@@ -144,8 +149,8 @@ function getMockMatchData() {
       country: 'US',
       url: 'https://nbcsports.com/game/1',
       regionalRestrictions: false,
-      source: 'mock_data'
-    }
+      source: 'mock_data',
+    },
   ];
 }
 
@@ -159,19 +164,24 @@ export function processMatchData(matches) {
     console.warn('processMatchData received null or undefined data');
     return [];
   }
-  
+
   if (!Array.isArray(matches)) {
     console.warn('processMatchData received non-array data:', typeof matches);
-    if (matches && typeof matches === 'object' && matches.matches && Array.isArray(matches.matches)) {
+    if (
+      matches &&
+      typeof matches === 'object' &&
+      matches.matches &&
+      Array.isArray(matches.matches)
+    ) {
       console.log('Extracting matches array from object');
       matches = matches.matches;
     } else {
       return [];
     }
   }
-  
+
   console.log(`Processing ${matches.length} matches from Fubo TV API`);
-  
+
   return matches.map(match => ({
     id: match.id || '',
     title: match.title || '',
@@ -194,7 +204,7 @@ export function processMatchData(matches) {
     regionalRestrictions: match.regionalRestrictions || match.isRegional || false,
     startTime: match.starttime || match.startTime || '',
     endTime: match.endtime || match.endTime || '',
-    source: 'fubo_api'
+    source: 'fubo_api',
   }));
 }
 
@@ -207,20 +217,20 @@ export async function getFuboTvMatches(options = {}) {
   try {
     const rawData = await fetchFuboTvMatches();
     let processedData = processMatchData(rawData);
-    
+
     // Apply filters if provided in options
     if (options.sport) {
-      processedData = processedData.filter(match => 
-        match.sport && match.sport.toLowerCase() === options.sport.toLowerCase()
+      processedData = processedData.filter(
+        match => match.sport && match.sport.toLowerCase() === options.sport.toLowerCase()
       );
     }
-    
+
     if (options.league) {
-      processedData = processedData.filter(match => 
-        match.league && match.league.toLowerCase() === options.league.toLowerCase()
+      processedData = processedData.filter(
+        match => match.league && match.league.toLowerCase() === options.league.toLowerCase()
       );
     }
-    
+
     if (options.startDate) {
       const startDate = new Date(options.startDate);
       processedData = processedData.filter(match => {
@@ -228,10 +238,10 @@ export async function getFuboTvMatches(options = {}) {
         return !isNaN(matchDate.getTime()) && matchDate >= startDate;
       });
     }
-    
+
     return processedData;
   } catch (error) {
     console.error('Error in getFuboTvMatches:', error);
     throw error;
   }
-} 
+}

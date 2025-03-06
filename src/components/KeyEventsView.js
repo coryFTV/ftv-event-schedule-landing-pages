@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { fetchGoogleSheetsData, queryGoogleSheetsData, convertToEasternTime } from '../utils/helpers';
+import {
+  fetchGoogleSheetsData,
+  queryGoogleSheetsData,
+  convertToEasternTime,
+} from '../utils/helpers';
 import URLBuilder from './URLBuilder';
 import './ScheduleView.css'; // Reuse the same styling
 
@@ -8,30 +12,30 @@ function KeyEventsView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedMatch, setSelectedMatch] = useState(null);
-  
+
   // Google Sheets configuration
-  const SHEET_ID = "1yVXd40qGy8IVXe-LS79gFAiAFv476RPVQVY6whMR_hs";
-  const SHEET_NAME = "Highlights";
-  const RANGE = "A9:E";
-  
+  const SHEET_ID = '1yVXd40qGy8IVXe-LS79gFAiAFv476RPVQVY6whMR_hs';
+  const SHEET_NAME = 'Highlights';
+  const RANGE = 'A9:E';
+
   useEffect(() => {
     async function loadGoogleSheetsData() {
       try {
         setLoading(true);
-        
+
         // Fetch data from Google Sheets
         const sheetsData = await fetchGoogleSheetsData(SHEET_ID, SHEET_NAME, RANGE);
-        
+
         // Get yesterday's date for filtering
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        
+
         // Query the data similar to your QUERY formula
         const filteredData = queryGoogleSheetsData(sheetsData, {
           dateColumn: 'Date', // Assuming 'Date' is the column name
           minDate: yesterday.toISOString().split('T')[0], // Format as YYYY-MM-DD
         });
-        
+
         // Transform the data to match the format expected by the app
         const transformedData = filteredData.map((item, index) => ({
           id: `sheet-${index}`,
@@ -41,9 +45,9 @@ function KeyEventsView() {
           league: item.League || '',
           network: item.Network || '',
           url: item.URL || '',
-          isHighlight: true
+          isHighlight: true,
         }));
-        
+
         setData(transformedData);
         setLoading(false);
       } catch (err) {
@@ -52,18 +56,18 @@ function KeyEventsView() {
         setLoading(false);
       }
     }
-    
+
     loadGoogleSheetsData();
   }, []);
-  
-  const openUrlBuilder = (match) => {
+
+  const openUrlBuilder = match => {
     setSelectedMatch(match);
   };
-  
+
   const closeUrlBuilder = () => {
     setSelectedMatch(null);
   };
-  
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -72,24 +76,26 @@ function KeyEventsView() {
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="error-container">
         <h2>Something went wrong</h2>
         <p>{error}</p>
-        <button className="btn" onClick={() => window.location.reload()}>Try Again</button>
+        <button className="btn" onClick={() => window.location.reload()}>
+          Try Again
+        </button>
       </div>
     );
   }
-  
+
   return (
     <div className="schedule-container">
       <div className="content-card">
         <h1>Key Events on Fubo</h1>
         <p>Showing the most important upcoming sports events and highlights on Fubo TV.</p>
       </div>
-      
+
       <div className="content-card">
         {data.length === 0 ? (
           <div className="no-results">
@@ -120,10 +126,7 @@ function KeyEventsView() {
                     <td>{event.league}</td>
                     <td>{event.network}</td>
                     <td>
-                      <button 
-                        className="btn btn-secondary"
-                        onClick={() => openUrlBuilder(event)}
-                      >
+                      <button className="btn btn-secondary" onClick={() => openUrlBuilder(event)}>
                         Create URL
                       </button>
                     </td>
@@ -134,15 +137,10 @@ function KeyEventsView() {
           </table>
         )}
       </div>
-      
-      {selectedMatch && (
-        <URLBuilder 
-          match={selectedMatch} 
-          onClose={closeUrlBuilder} 
-        />
-      )}
+
+      {selectedMatch && <URLBuilder match={selectedMatch} onClose={closeUrlBuilder} />}
     </div>
   );
 }
 
-export default KeyEventsView; 
+export default KeyEventsView;

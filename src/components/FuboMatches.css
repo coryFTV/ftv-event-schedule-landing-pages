@@ -21,7 +21,9 @@
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 16px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .match-card:hover {
@@ -35,7 +37,8 @@
   margin-bottom: 10px;
 }
 
-.match-league, .match-sport {
+.match-league,
+.match-sport {
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -95,7 +98,9 @@
   font-weight: 600;
 }
 
-.loading, .error, .no-matches {
+.loading,
+.error,
+.no-matches {
   padding: 20px;
   text-align: center;
   margin: 20px 0;
@@ -128,4 +133,4 @@
   .matches-grid {
     grid-template-columns: 1fr;
   }
-} 
+}

@@ -55,7 +55,8 @@
   word-break: break-all;
 }
 
-.sheets-loading, .sheets-error {
+.sheets-loading,
+.sheets-error {
   padding: 24px;
   text-align: center;
   margin: 24px 0;
@@ -177,11 +178,11 @@
   .sheets-iframe-container {
     height: 400px;
   }
-  
+
   .info-item {
     flex-direction: column;
   }
-  
+
   .info-label {
     width: 100%;
     margin-bottom: 4px;

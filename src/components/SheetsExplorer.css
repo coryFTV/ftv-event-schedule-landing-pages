@@ -61,7 +61,10 @@
   margin-top: 24px;
 }
 
-.view-button, .save-button, .load-button, .remove-button {
+.view-button,
+.save-button,
+.load-button,
+.remove-button {
   padding: 10px 15px;
   border: none;
   border-radius: 4px;
@@ -179,8 +182,8 @@
   .saved-sheets-list {
     grid-template-columns: 1fr;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }
-} 
+}

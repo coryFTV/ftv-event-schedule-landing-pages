@@ -9,16 +9,18 @@ function SheetsExplorer() {
   const [savedSheets, setSavedSheets] = useState(() => {
     // Load saved sheets from localStorage if available
     const saved = localStorage.getItem('savedSheets');
-    return saved ? JSON.parse(saved) : [
-      {
-        id: '1yVXd40qGy8IVXe-LS79gFAiAFv476RPVQVY6whMR_hs',
-        name: 'Highlights',
-        description: 'Key Events on Fubo'
-      }
-    ];
+    return saved
+      ? JSON.parse(saved)
+      : [
+          {
+            id: '1yVXd40qGy8IVXe-LS79gFAiAFv476RPVQVY6whMR_hs',
+            name: 'Highlights',
+            description: 'Key Events on Fubo',
+          },
+        ];
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
     if (sheetId) {
       setShowPreview(true);
@@ -27,7 +29,7 @@ function SheetsExplorer() {
 
   const saveSheet = () => {
     if (!sheetId) return;
-    
+
     const description = prompt('Enter a description for this sheet:');
     if (description) {
       const newSavedSheets = [
@@ -35,22 +37,22 @@ function SheetsExplorer() {
         {
           id: sheetId,
           name: sheetName || 'Sheet1',
-          description
-        }
+          description,
+        },
       ];
-      
+
       setSavedSheets(newSavedSheets);
       localStorage.setItem('savedSheets', JSON.stringify(newSavedSheets));
     }
   };
 
-  const loadSavedSheet = (sheet) => {
+  const loadSavedSheet = sheet => {
     setSheetId(sheet.id);
     setSheetName(sheet.name);
     setShowPreview(true);
   };
 
-  const removeSavedSheet = (index) => {
+  const removeSavedSheet = index => {
     const confirmed = window.confirm('Are you sure you want to remove this saved sheet?');
     if (confirmed) {
       const newSavedSheets = [...savedSheets];
@@ -65,7 +67,7 @@ function SheetsExplorer() {
       <div className="content-card">
         <h1>Google Sheets Explorer</h1>
         <p>View and explore Google Sheets data directly in this application.</p>
-        
+
         <form onSubmit={handleSubmit} className="sheets-form">
           <div className="form-group">
             <label htmlFor="sheetId">Google Sheet ID:</label>
@@ -73,29 +75,25 @@ function SheetsExplorer() {
               type="text"
               id="sheetId"
               value={sheetId}
-              onChange={(e) => setSheetId(e.target.value)}
+              onChange={e => setSheetId(e.target.value)}
               placeholder="Enter Google Sheet ID"
               required
             />
-            <small className="form-help">
-              The ID is the part of the URL between /d/ and /edit
-            </small>
+            <small className="form-help">The ID is the part of the URL between /d/ and /edit</small>
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="sheetName">Sheet Name (optional):</label>
             <input
               type="text"
               id="sheetName"
               value={sheetName}
-              onChange={(e) => setSheetName(e.target.value)}
+              onChange={e => setSheetName(e.target.value)}
               placeholder="Sheet1"
             />
-            <small className="form-help">
-              Leave blank to use the first sheet
-            </small>
+            <small className="form-help">Leave blank to use the first sheet</small>
           </div>
-          
+
           <div className="form-actions">
             <button type="submit" className="btn">
               Load Sheet
@@ -108,10 +106,10 @@ function SheetsExplorer() {
           </div>
         </form>
       </div>
-      
+
       <div className="content-card">
         <h2>Saved Sheets</h2>
-        
+
         {savedSheets.length > 0 ? (
           <div className="saved-sheets-list">
             {savedSheets.map((sheet, index) => (
@@ -124,16 +122,10 @@ function SheetsExplorer() {
                   </div>
                 </div>
                 <div className="saved-sheet-actions">
-                  <button 
-                    className="btn"
-                    onClick={() => loadSavedSheet(sheet)}
-                  >
+                  <button className="btn" onClick={() => loadSavedSheet(sheet)}>
                     Load
                   </button>
-                  <button 
-                    className="btn btn-secondary"
-                    onClick={() => removeSavedSheet(index)}
-                  >
+                  <button className="btn btn-secondary" onClick={() => removeSavedSheet(index)}>
                     Remove
                   </button>
                 </div>
@@ -141,10 +133,12 @@ function SheetsExplorer() {
             ))}
           </div>
         ) : (
-          <p className="no-saved-sheets">No saved sheets yet. Load a sheet and save it for quick access later.</p>
+          <p className="no-saved-sheets">
+            No saved sheets yet. Load a sheet and save it for quick access later.
+          </p>
         )}
       </div>
-      
+
       {showPreview && (
         <div className="content-card">
           <h2>Sheet Preview</h2>
@@ -155,4 +149,4 @@ function SheetsExplorer() {
   );
 }
 
-export default SheetsExplorer; 
+export default SheetsExplorer;

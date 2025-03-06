@@ -12,20 +12,20 @@
 async function fetchWithRetry(url, retries = 3, initialDelay = 1000) {
   let lastError;
   let delay = initialDelay;
-  
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      
+
       return await response.json();
     } catch (error) {
       console.warn(`Fetch attempt ${attempt}/${retries} failed for ${url}:`, error.message);
       lastError = error;
-      
+
       if (attempt < retries) {
         console.log(`Waiting ${delay}ms before retry...`);
         await new Promise(resolve => setTimeout(resolve, delay));
@@ -33,7 +33,7 @@ async function fetchWithRetry(url, retries = 3, initialDelay = 1000) {
       }
     }
   }
-  
+
   throw lastError;
 }
 
@@ -43,15 +43,18 @@ async function fetchWithRetry(url, retries = 3, initialDelay = 1000) {
  */
 export async function fetchFuboTvMovies() {
   try {
-    const url = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:3001/movies.json' 
-      : '/movies.json';
-    
+    const url =
+      process.env.NODE_ENV === 'development' ? 'http://localhost:3001/movies.json' : '/movies.json';
+
     console.log(`Attempting to fetch movies from Fubo TV API: ${url}`);
-    
+
     const data = await fetchWithRetry(url);
-    console.log('Fubo TV Movies API fetch successful, data structure:', typeof data, Array.isArray(data) ? `Array with ${data.length} items` : 'Not an array');
-    
+    console.log(
+      'Fubo TV Movies API fetch successful, data structure:',
+      typeof data,
+      Array.isArray(data) ? `Array with ${data.length} items` : 'Not an array'
+    );
+
     // Handle different data structures
     if (Array.isArray(data)) {
       return data;
@@ -75,15 +78,18 @@ export async function fetchFuboTvMovies() {
  */
 export async function fetchFuboTvSeries() {
   try {
-    const url = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:3001/series.json' 
-      : '/series.json';
-    
+    const url =
+      process.env.NODE_ENV === 'development' ? 'http://localhost:3001/series.json' : '/series.json';
+
     console.log(`Attempting to fetch series from Fubo TV API: ${url}`);
-    
+
     const data = await fetchWithRetry(url);
-    console.log('Fubo TV Series API fetch successful, data structure:', typeof data, Array.isArray(data) ? `Array with ${data.length} items` : 'Not an array');
-    
+    console.log(
+      'Fubo TV Series API fetch successful, data structure:',
+      typeof data,
+      Array.isArray(data) ? `Array with ${data.length} items` : 'Not an array'
+    );
+
     // Handle different data structures
     if (Array.isArray(data)) {
       return data;
@@ -95,18 +101,18 @@ export async function fetchFuboTvSeries() {
       const possibleArrays = Object.values(data).filter(val => Array.isArray(val));
       if (possibleArrays.length > 0) {
         // Use the largest array found
-        const largestArray = possibleArrays.reduce((a, b) => a.length > b.length ? a : b);
+        const largestArray = possibleArrays.reduce((a, b) => (a.length > b.length ? a : b));
         console.log(`Found potential series array with ${largestArray.length} items`);
         return largestArray;
       }
-      
+
       // If no arrays found, convert object to array as fallback
       if (Object.keys(data).length > 0) {
         console.log('Converting object to array as fallback');
         return [data];
       }
     }
-    
+
     // Return empty array as last resort to prevent crashes
     console.warn('Could not extract series data, returning empty array');
     return [];
@@ -127,7 +133,7 @@ export function processMovieData(movies) {
     console.warn('processMovieData received null or undefined data');
     return [];
   }
-  
+
   if (!Array.isArray(movies)) {
     console.warn('processMovieData received non-array data:', typeof movies);
     if (movies && typeof movies === 'object' && movies.movies && Array.isArray(movies.movies)) {
@@ -137,9 +143,9 @@ export function processMovieData(movies) {
       return [];
     }
   }
-  
+
   console.log(`Processing ${movies.length} movies from Fubo TV API`);
-  
+
   return movies.map(movie => ({
     id: movie.tmsId || movie.id || '',
     title: movie.title || '',
@@ -155,8 +161,8 @@ export function processMovieData(movies) {
     network: movie.network || '',
     starttime: movie.licenseWindowStart || new Date().toISOString(),
     sport: 'Movie',
-    league: Array.isArray(movie.genres) ? movie.genres[0] : (movie.genres || 'Movie'),
-    source: 'fubo_movies'
+    league: Array.isArray(movie.genres) ? movie.genres[0] : movie.genres || 'Movie',
+    source: 'fubo_movies',
   }));
 }
 
@@ -170,7 +176,7 @@ export function processSeriesData(series) {
     console.warn('processSeriesData received null or undefined data');
     return [];
   }
-  
+
   if (!Array.isArray(series)) {
     console.warn('processSeriesData received non-array data:', typeof series);
     if (series && typeof series === 'object' && series.series && Array.isArray(series.series)) {
@@ -184,35 +190,43 @@ export function processSeriesData(series) {
       return [];
     }
   }
-  
+
   console.log(`Processing ${series.length} TV series from Fubo TV API`);
-  
-  return series.map(show => {
-    // Ensure we have an object to work with
-    if (!show || typeof show !== 'object') {
-      console.warn('Invalid show data:', show);
-      return null;
-    }
-    
-    return {
-      id: show.id || show.tmsId || '',
-      title: show.title || show.name || '',
-      description: show.description || show.shortDescription || show.longDescription || '',
-      seasons: show.seasons || show.seasonCount || '',
-      episodes: show.episodes || show.episodeCount || '',
-      genre: Array.isArray(show.genres) ? show.genres.join(', ') : (show.genre || show.genres || ''),
-      rating: show.rating || show.contentRating || '',
-      creator: Array.isArray(show.creators) ? show.creators.join(', ') : (show.creator || show.creators || ''),
-      actors: Array.isArray(show.actors) ? show.actors : (show.cast || []),
-      thumbnail: show.thumbnail || show.poster || show.image || '',
-      url: show.url || show.deepLink || '',
-      network: show.network || show.channel || '',
-      starttime: show.startTime || show.airDate || new Date().toISOString(),
-      sport: 'TV Series', // For compatibility with sports filtering
-      league: Array.isArray(show.genres) ? show.genres[0] : (show.genre || show.genres || 'TV Series'),
-      source: 'fubo_series'
-    };
-  }).filter(Boolean); // Remove any null entries
+
+  return series
+    .map(show => {
+      // Ensure we have an object to work with
+      if (!show || typeof show !== 'object') {
+        console.warn('Invalid show data:', show);
+        return null;
+      }
+
+      return {
+        id: show.id || show.tmsId || '',
+        title: show.title || show.name || '',
+        description: show.description || show.shortDescription || show.longDescription || '',
+        seasons: show.seasons || show.seasonCount || '',
+        episodes: show.episodes || show.episodeCount || '',
+        genre: Array.isArray(show.genres)
+          ? show.genres.join(', ')
+          : show.genre || show.genres || '',
+        rating: show.rating || show.contentRating || '',
+        creator: Array.isArray(show.creators)
+          ? show.creators.join(', ')
+          : show.creator || show.creators || '',
+        actors: Array.isArray(show.actors) ? show.actors : show.cast || [],
+        thumbnail: show.thumbnail || show.poster || show.image || '',
+        url: show.url || show.deepLink || '',
+        network: show.network || show.channel || '',
+        starttime: show.startTime || show.airDate || new Date().toISOString(),
+        sport: 'TV Series', // For compatibility with sports filtering
+        league: Array.isArray(show.genres)
+          ? show.genres[0]
+          : show.genre || show.genres || 'TV Series',
+        source: 'fubo_series',
+      };
+    })
+    .filter(Boolean); // Remove any null entries
 }
 
 /**
@@ -224,20 +238,20 @@ export async function getFuboTvMovies(options = {}) {
   try {
     const rawData = await fetchFuboTvMovies();
     let processedData = processMovieData(rawData);
-    
+
     // Apply filters if provided in options
     if (options.genre) {
-      processedData = processedData.filter(movie => 
-        movie.genre && movie.genre.toLowerCase().includes(options.genre.toLowerCase())
+      processedData = processedData.filter(
+        movie => movie.genre && movie.genre.toLowerCase().includes(options.genre.toLowerCase())
       );
     }
-    
+
     if (options.releaseYear) {
-      processedData = processedData.filter(movie => 
-        movie.releaseYear && movie.releaseYear === options.releaseYear
+      processedData = processedData.filter(
+        movie => movie.releaseYear && movie.releaseYear === options.releaseYear
       );
     }
-    
+
     return processedData;
   } catch (error) {
     console.error('Error in getFuboTvMovies:', error);
@@ -254,17 +268,17 @@ export async function getFuboTvSeries(options = {}) {
   try {
     const rawData = await fetchFuboTvSeries();
     let processedData = processSeriesData(rawData);
-    
+
     // Apply filters if provided in options
     if (options.genre) {
-      processedData = processedData.filter(show => 
-        show.genre && show.genre.toLowerCase().includes(options.genre.toLowerCase())
+      processedData = processedData.filter(
+        show => show.genre && show.genre.toLowerCase().includes(options.genre.toLowerCase())
       );
     }
-    
+
     return processedData;
   } catch (error) {
     console.error('Error in getFuboTvSeries:', error);
     return []; // Return empty array instead of throwing to prevent app crashes
   }
-} 
+}

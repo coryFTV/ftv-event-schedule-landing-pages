@@ -4,7 +4,13 @@ import { convertToEasternTime } from '../utils/helpers';
 import URLBuilder from './URLBuilder';
 import './ScheduleView.css'; // Reuse the same styling
 
-function MoviesView({ data, loading: externalLoading, error: externalError, filter = {}, title = "Movies on Fubo" }) {
+function MoviesView({
+  data,
+  loading: externalLoading,
+  error: externalError,
+  filter = {},
+  title = 'Movies on Fubo',
+}) {
   const [localData, setLocalData] = useState([]);
   const [localLoading, setLocalLoading] = useState(true);
   const [localError, setLocalError] = useState(null);
@@ -31,12 +37,12 @@ function MoviesView({ data, loading: externalLoading, error: externalError, filt
         console.log('Fetching movies data locally');
         setLocalLoading(true);
         setLocalError(null);
-        
+
         // Get movies with optional filters
         const options = {};
         if (filter.genre) options.genre = filter.genre;
         if (filter.releaseYear) options.releaseYear = filter.releaseYear;
-        
+
         const moviesData = await getFuboTvMovies(options);
         setLocalData(moviesData);
       } catch (err) {
@@ -56,45 +62,48 @@ function MoviesView({ data, loading: externalLoading, error: externalError, filt
       setFilteredData([]);
       return;
     }
-    
+
     console.log(`Filtering ${effectiveData.length} movies`);
     let filtered = [...effectiveData];
-    
+
     // Apply filters based on the filter prop
     if (filter.type === 'genre' && filter.value) {
-      filtered = filtered.filter(movie => 
-        (movie.genre && movie.genre.toLowerCase().includes(filter.value.toLowerCase()))
+      filtered = filtered.filter(
+        movie => movie.genre && movie.genre.toLowerCase().includes(filter.value.toLowerCase())
       );
     } else if (filter.type === 'releaseYear' && filter.value) {
-      filtered = filtered.filter(movie => 
-        (movie.releaseYear && movie.releaseYear === filter.value)
-      );
+      filtered = filtered.filter(movie => movie.releaseYear && movie.releaseYear === filter.value);
     } else if (filter.type === 'rating' && filter.value) {
-      filtered = filtered.filter(movie => 
-        (movie.rating && movie.rating === filter.value)
-      );
+      filtered = filtered.filter(movie => movie.rating && movie.rating === filter.value);
     }
-    
+
     // Apply search term filtering
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(movie => 
-        (movie.title && movie.title.toLowerCase().includes(term)) ||
-        (movie.genre && movie.genre.toLowerCase().includes(term)) ||
-        (movie.director && movie.director.toLowerCase().includes(term)) ||
-        (movie.description && movie.description.toLowerCase().includes(term))
+      filtered = filtered.filter(
+        movie =>
+          (movie.title && movie.title.toLowerCase().includes(term)) ||
+          (movie.genre && movie.genre.toLowerCase().includes(term)) ||
+          (movie.director && movie.director.toLowerCase().includes(term)) ||
+          (movie.description && movie.description.toLowerCase().includes(term))
       );
     }
-    
+
     // Apply sorting
     if (sortConfig.key) {
       filtered.sort((a, b) => {
         if (!a[sortConfig.key]) return 1;
         if (!b[sortConfig.key]) return -1;
-        
-        const aValue = typeof a[sortConfig.key] === 'string' ? a[sortConfig.key].toLowerCase() : a[sortConfig.key];
-        const bValue = typeof b[sortConfig.key] === 'string' ? b[sortConfig.key].toLowerCase() : b[sortConfig.key];
-        
+
+        const aValue =
+          typeof a[sortConfig.key] === 'string'
+            ? a[sortConfig.key].toLowerCase()
+            : a[sortConfig.key];
+        const bValue =
+          typeof b[sortConfig.key] === 'string'
+            ? b[sortConfig.key].toLowerCase()
+            : b[sortConfig.key];
+
         if (aValue < bValue) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
         }
@@ -104,11 +113,11 @@ function MoviesView({ data, loading: externalLoading, error: externalError, filt
         return 0;
       });
     }
-    
+
     setFilteredData(filtered);
   }, [effectiveData, filter, searchTerm, sortConfig]);
 
-  const handleSort = (key) => {
+  const handleSort = key => {
     let direction = 'ascending';
     if (sortConfig.key === key && sortConfig.direction === 'ascending') {
       direction = 'descending';
@@ -116,12 +125,12 @@ function MoviesView({ data, loading: externalLoading, error: externalError, filt
     setSortConfig({ key, direction });
   };
 
-  const getSortIndicator = (key) => {
+  const getSortIndicator = key => {
     if (sortConfig.key !== key) return '';
     return sortConfig.direction === 'ascending' ? ' ▲' : ' ▼';
   };
 
-  const openUrlBuilder = (movie) => {
+  const openUrlBuilder = movie => {
     setSelectedMovie(movie);
   };
 
@@ -158,49 +167,37 @@ function MoviesView({ data, loading: externalLoading, error: externalError, filt
     <div className="schedule-container">
       <div className="content-card">
         <h1>{title}</h1>
-        
+
         <div className="schedule-controls">
           <div className="search-container">
             <input
               type="text"
               placeholder="Search movies, genres, directors..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="search-input"
             />
           </div>
-          
+
           <div className="results-count">
             Showing {filteredData.length} {filteredData.length === 1 ? 'movie' : 'movies'}
           </div>
         </div>
       </div>
-      
+
       <div className="content-card">
         <table className="schedule-table">
           <thead>
             <tr>
-              <th onClick={() => handleSort('title')}>
-                Title{getSortIndicator('title')}
-              </th>
+              <th onClick={() => handleSort('title')}>Title{getSortIndicator('title')}</th>
               <th onClick={() => handleSort('releaseYear')}>
                 Year{getSortIndicator('releaseYear')}
               </th>
-              <th onClick={() => handleSort('genre')}>
-                Genre{getSortIndicator('genre')}
-              </th>
-              <th onClick={() => handleSort('duration')}>
-                Duration{getSortIndicator('duration')}
-              </th>
-              <th onClick={() => handleSort('rating')}>
-                Rating{getSortIndicator('rating')}
-              </th>
-              <th onClick={() => handleSort('director')}>
-                Director{getSortIndicator('director')}
-              </th>
-              <th onClick={() => handleSort('network')}>
-                Network{getSortIndicator('network')}
-              </th>
+              <th onClick={() => handleSort('genre')}>Genre{getSortIndicator('genre')}</th>
+              <th onClick={() => handleSort('duration')}>Duration{getSortIndicator('duration')}</th>
+              <th onClick={() => handleSort('rating')}>Rating{getSortIndicator('rating')}</th>
+              <th onClick={() => handleSort('director')}>Director{getSortIndicator('director')}</th>
+              <th onClick={() => handleSort('network')}>Network{getSortIndicator('network')}</th>
               <th>URL</th>
             </tr>
           </thead>
@@ -216,10 +213,7 @@ function MoviesView({ data, loading: externalLoading, error: externalError, filt
                   <td>{movie.director}</td>
                   <td>{movie.network || 'N/A'}</td>
                   <td>
-                    <button 
-                      className="btn btn-secondary"
-                      onClick={() => openUrlBuilder(movie)}
-                    >
+                    <button className="btn btn-secondary" onClick={() => openUrlBuilder(movie)}>
                       Create URL
                     </button>
                   </td>
@@ -235,15 +229,10 @@ function MoviesView({ data, loading: externalLoading, error: externalError, filt
           </tbody>
         </table>
       </div>
-      
-      {selectedMovie && (
-        <URLBuilder 
-          match={selectedMovie} 
-          onClose={closeUrlBuilder} 
-        />
-      )}
+
+      {selectedMovie && <URLBuilder match={selectedMovie} onClose={closeUrlBuilder} />}
     </div>
   );
 }
 
-export default MoviesView; 
+export default MoviesView;

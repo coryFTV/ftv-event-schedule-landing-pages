@@ -115,15 +115,15 @@
     flex-wrap: wrap;
     gap: 8px;
   }
-  
+
   .pagination-button {
     padding: 8px 12px;
     font-size: 0.85rem;
   }
-  
+
   .pagination-page {
     width: 36px;
     height: 36px;
     font-size: 0.85rem;
   }
-} 
+}

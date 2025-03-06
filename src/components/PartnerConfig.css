@@ -61,7 +61,9 @@
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 14px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .form-group input:focus {
@@ -177,12 +179,12 @@
     flex-direction: column;
     gap: 0;
   }
-  
+
   .saved-configs {
     grid-template-columns: 1fr;
   }
-  
+
   .form-group {
     min-width: 100%;
   }
-} 
+}

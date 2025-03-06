@@ -80,7 +80,8 @@
   background-color: #0055aa;
 }
 
-.loading, .error {
+.loading,
+.error {
   text-align: center;
   padding: 40px;
   font-size: 18px;
@@ -102,12 +103,12 @@
   .landing-pages-table {
     font-size: 0.9rem;
   }
-  
+
   .landing-pages-table th,
   .landing-pages-table td {
     padding: 10px 12px;
   }
-  
+
   .btn {
     padding: 4px 8px;
     font-size: 0.8rem;

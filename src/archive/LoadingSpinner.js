@@ -10,4 +10,4 @@ function LoadingSpinner({ message = 'Loading...' }) {
   );
 }
 
-export default LoadingSpinner; 
+export default LoadingSpinner;
