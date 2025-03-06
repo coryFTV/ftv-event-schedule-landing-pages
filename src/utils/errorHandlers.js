@@ -1,3 +1,5 @@
+import { notifyError } from './notificationService';
+
 /**
  * Sets up global error handlers for the application
  */
@@ -10,6 +12,9 @@ export const setupGlobalErrorHandlers = () => {
     console.error('Error stack:', event.error?.stack);
     console.error('Error type:', event.error?.constructor?.name);
     console.error('Error event:', event);
+
+    // Show user-friendly notification
+    notifyError(`Application Error: ${event.error?.message || 'Unknown error'}`);
 
     document.getElementById('root').innerHTML = `
       <div style="padding: 20px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px;">
@@ -31,6 +36,9 @@ export const setupGlobalErrorHandlers = () => {
     console.error('Rejection stack:', event.reason?.stack);
     console.error('Rejection type:', event.reason?.constructor?.name);
     console.error('Rejection event:', event);
+
+    // Show user-friendly notification
+    notifyError(`Unhandled Promise Rejection: ${event.reason?.message || 'Unknown error'}`);
   });
 };
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getFuboTvMatches } from '../utils/fuboTvApi';
-import { getFuboTvMovies, getFuboTvSeries } from '../utils/fuboContentApi';
+import { getFuboMatches, getFuboMovies, getFuboSeries } from '../utils/fuboApi';
+import { notifyError, notifyWarning, notifySuccess } from '../utils/notificationService';
 
 /**
  * Custom hook to fetch and manage Fubo TV data (sports, movies, series)
@@ -39,13 +39,11 @@ export const useFuboData = () => {
         }));
 
         // Fetch sports data
-        console.log('Starting to fetch Fubo TV matches...');
-        let matches;
         try {
-          matches = await getFuboTvMatches();
+          const matches = await getFuboMatches();
 
           if (Array.isArray(matches) && matches.length > 0) {
-            console.log(`Successfully loaded ${matches.length} matches from Fubo TV API`);
+            notifySuccess(`Successfully loaded ${matches.length} matches`);
             setSportsData(matches);
             setAppState(prev => ({
               ...prev,
@@ -55,7 +53,7 @@ export const useFuboData = () => {
               },
             }));
           } else {
-            console.warn('Fubo TV Sports API returned empty or invalid data');
+            notifyWarning('No sports matches found');
             setSportsData([]);
             setAppState(prev => ({
               ...prev,
@@ -66,7 +64,7 @@ export const useFuboData = () => {
             }));
           }
         } catch (sportsError) {
-          console.error('Error fetching sports data:', sportsError);
+          notifyError(`Error loading sports data: ${sportsError.message}`);
           setSportsData([]);
           setAppState(prev => ({
             ...prev,
@@ -88,13 +86,11 @@ export const useFuboData = () => {
         }));
 
         // Fetch movies data
-        console.log('Starting to fetch Fubo TV movies...');
-        let movies;
         try {
-          movies = await getFuboTvMovies();
+          const movies = await getFuboMovies();
 
           if (Array.isArray(movies) && movies.length > 0) {
-            console.log(`Successfully loaded ${movies.length} movies from Fubo TV API`);
+            notifySuccess(`Successfully loaded ${movies.length} movies`);
             setMoviesData(movies);
             setAppState(prev => ({
               ...prev,
@@ -104,7 +100,7 @@ export const useFuboData = () => {
               },
             }));
           } else {
-            console.warn('Fubo TV Movies API returned empty or invalid data');
+            notifyWarning('No movies found');
             setMoviesData([]);
             setAppState(prev => ({
               ...prev,
@@ -115,7 +111,7 @@ export const useFuboData = () => {
             }));
           }
         } catch (moviesError) {
-          console.error('Error fetching movies data:', moviesError);
+          notifyError(`Error loading movies data: ${moviesError.message}`);
           setMoviesData([]);
           setAppState(prev => ({
             ...prev,
@@ -137,13 +133,11 @@ export const useFuboData = () => {
         }));
 
         // Fetch series data
-        console.log('Starting to fetch Fubo TV series...');
-        let series;
         try {
-          series = await getFuboTvSeries();
+          const series = await getFuboSeries();
 
           if (Array.isArray(series) && series.length > 0) {
-            console.log(`Successfully loaded ${series.length} TV series from Fubo TV API`);
+            notifySuccess(`Successfully loaded ${series.length} TV series`);
             setSeriesData(series);
             setAppState(prev => ({
               ...prev,
@@ -153,7 +147,7 @@ export const useFuboData = () => {
               },
             }));
           } else {
-            console.warn('Fubo TV Series API returned empty or invalid data');
+            notifyWarning('No TV series found');
             setSeriesData([]);
             setAppState(prev => ({
               ...prev,
@@ -164,7 +158,7 @@ export const useFuboData = () => {
             }));
           }
         } catch (seriesError) {
-          console.error('Error fetching series data:', seriesError);
+          notifyError(`Error loading series data: ${seriesError.message}`);
           setSeriesData([]);
           setAppState(prev => ({
             ...prev,
@@ -182,7 +176,7 @@ export const useFuboData = () => {
         }));
         setLoading(false);
       } catch (error) {
-        console.error('Error in data fetching process:', error);
+        notifyError(`Error in data fetching process: ${error.message}`);
         setError(error.message || 'An unexpected error occurred');
         setLoading(false);
         setAppState(prev => ({

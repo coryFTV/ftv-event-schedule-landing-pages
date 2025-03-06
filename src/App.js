@@ -5,6 +5,7 @@ import AppRoutes from './routes/AppRoutes';
 import DebugInfo from './components/common/DebugInfo';
 import LoadingComponent from './components/common/LoadingComponent';
 import ErrorComponent from './components/common/ErrorComponent';
+import NotificationCenter from './components/common/NotificationCenter';
 import useFuboData from './hooks/useFuboData';
 import { setupGlobalErrorHandlers } from './utils/errorHandlers';
 import './App.css';
@@ -27,12 +28,22 @@ function App() {
 
   // Show loading component while data is being fetched
   if (loading) {
-    return <LoadingComponent />;
+    return (
+      <>
+        <LoadingComponent />
+        <NotificationCenter />
+      </>
+    );
   }
 
   // Show error component if there was an error
   if (error) {
-    return <ErrorComponent message={error} />;
+    return (
+      <>
+        <ErrorComponent message={error} />
+        <NotificationCenter />
+      </>
+    );
   }
 
   return (
@@ -49,6 +60,7 @@ function App() {
           />
         </main>
         <DebugInfo appState={appState} />
+        <NotificationCenter />
       </div>
     </Router>
   );
