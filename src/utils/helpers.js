@@ -6,32 +6,74 @@ export function convertToEasternTime(utcTimeString) {
     return { datePart: 'N/A', timePart: 'N/A' };
   }
 
-  const utcDate = new Date(utcTimeString);
+  try {
+    // Handle various date formats
+    let utcDate;
+    
+    // Check if it's a timestamp number (milliseconds since epoch)
+    if (!isNaN(Number(utcTimeString))) {
+      utcDate = new Date(Number(utcTimeString));
+    } else {
+      // Try regular date parsing
+      utcDate = new Date(utcTimeString);
+    }
 
-  // Check if date is valid
-  if (isNaN(utcDate.getTime())) {
-    console.error('Invalid date format:', utcTimeString);
-    return { datePart: 'Invalid Date', timePart: 'Invalid Time' };
+    // Check if date is valid
+    if (isNaN(utcDate.getTime())) {
+      console.error('Invalid date format:', utcTimeString);
+      return { datePart: 'Invalid Date', timePart: 'Invalid Time' };
+    }
+
+    // Format date to match the Mar 7 format
+    const dateOptions = {
+      timeZone: 'America/New_York',
+      month: 'short',
+      day: 'numeric',
+    };
+
+    // Format time to match 01:00 PM format
+    const timeOptions = {
+      timeZone: 'America/New_York',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    };
+
+    try {
+      // Format date and time separately for better control
+      const dateFormatter = new Intl.DateTimeFormat('en-US', dateOptions);
+      const timeFormatter = new Intl.DateTimeFormat('en-US', timeOptions);
+      
+      let datePart = dateFormatter.format(utcDate);
+      const timePart = timeFormatter.format(utcDate);
+      
+      // Remove any trailing period from month abbreviation (e.g., "Mar." -> "Mar")
+      datePart = datePart.replace(/\./, '');
+      
+      return { datePart, timePart };
+    } catch (formattingError) {
+      console.error('Error formatting date:', formattingError);
+      
+      // Fallback formatting
+      const dateStr = utcDate.toLocaleDateString('en-US', { 
+        timeZone: 'America/New_York',
+        month: 'short',
+        day: 'numeric',
+      }).replace(/\./, '');
+      
+      const timeStr = utcDate.toLocaleTimeString('en-US', { 
+        timeZone: 'America/New_York',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+      
+      return { datePart: dateStr, timePart: timeStr };
+    }
+  } catch (error) {
+    console.error('Error in convertToEasternTime:', error, 'for input:', utcTimeString);
+    return { datePart: 'Error', timePart: 'Error' };
   }
-
-  // Format date in Eastern Time
-  const options = {
-    timeZone: 'America/New_York',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  };
-
-  const formatter = new Intl.DateTimeFormat('en-US', options);
-  const formattedDate = formatter.format(utcDate);
-
-  // Split into date and time parts
-  const [datePart, timePart] = formattedDate.split(', ');
-
-  return { datePart, timePart };
 }
 
 // Function to properly encode special characters in sharedId (but NOT URLs)

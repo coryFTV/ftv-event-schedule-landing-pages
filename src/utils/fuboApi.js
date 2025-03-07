@@ -65,24 +65,46 @@ export async function fetchFuboData(endpoint) {
         ? `http://localhost:3001/${endpoint}.json`
         : `/${endpoint}.json`;
 
+    console.log(`Fetching ${endpoint} data from: ${url}`);
     const data = await fetchWithRetry(url);
+    
+    // Log the structure for debugging
+    console.log(`${endpoint} data structure:`, 
+      Array.isArray(data) 
+        ? `Array with ${data.length} items` 
+        : (data ? `Object with keys: ${Object.keys(data).join(', ')}` : 'No data'));
 
     // Handle different data structures
     if (Array.isArray(data)) {
       return data;
     } else if (data && data[endpoint] && Array.isArray(data[endpoint])) {
       return data[endpoint];
-    } else if (endpoint === 'series' && data && typeof data === 'object') {
-      // Special handling for series data which might have inconsistent structure
-      const possibleArrays = Object.values(data).filter(val => Array.isArray(val));
+    } else if (data && typeof data === 'object') {
+      // For any data format, look for any array property that might contain our data
+      const possibleArrays = Object.entries(data)
+        .filter(([_, value]) => Array.isArray(value) && value.length > 0)
+        .map(([key, value]) => {
+          console.log(`Found array in property '${key}' with ${value.length} items`);
+          return { key, value };
+        });
+        
       if (possibleArrays.length > 0) {
         // Use the largest array found
-        const largestArray = possibleArrays.reduce((a, b) => (a.length > b.length ? a : b));
-        return largestArray;
+        const largestArray = possibleArrays.reduce(
+          (largest, current) => current.value.length > largest.value.length ? current : largest, 
+          possibleArrays[0]
+        );
+        console.log(`Using largest array from '${largestArray.key}' with ${largestArray.value.length} items`);
+        return largestArray.value;
       }
 
-      // If no arrays found, convert object to array as fallback
+      // If no arrays found, try to extract data from object
       if (Object.keys(data).length > 0) {
+        console.log('No arrays found, converting object data to array');
+        if (endpoint === 'matches' && data.matchData) {
+          // Special case for matches that might have a matchData property
+          return Array.isArray(data.matchData) ? data.matchData : [data];
+        }
         return [data];
       }
     }
@@ -90,6 +112,7 @@ export async function fetchFuboData(endpoint) {
     // If we can't extract data in a standard way, throw an error
     throw new Error(`Unexpected data structure from Fubo TV ${endpoint} API`);
   } catch (error) {
+    console.error(`Error in fetchFuboData for ${endpoint}:`, error);
     notifyError(`Error in fetchFuboData for ${endpoint}: ${error.message}`);
     
     // For matches, we can return mock data in development
@@ -183,33 +206,92 @@ function getMockMatchData() {
  */
 export function processMatchData(matches) {
   if (!matches || !Array.isArray(matches)) {
+    console.error('Invalid match data format:', matches);
     return [];
   }
 
-  return matches.map(match => ({
-    id: match.id || '',
-    title: match.title || '',
-    hometeam: match.hometeam || '',
-    awayteam: match.awayteam || '',
-    hometeamID: match.hometeamID || '',
-    awayteamID: match.awayteamID || '',
-    starttime: match.starttime || match.startTime || '',
-    endtime: match.endtime || match.endTime || '',
-    sport: match.sport || '',
-    league: match.league || '',
-    league_id: match.league_id || '',
-    network: match.network || '',
-    networkUrl: match.networkUrl || '',
-    matchId: match.matchId || '',
-    matchUrl: match.matchUrl || '',
-    thumbnail: match.thumbnail || '',
-    country: match.country || 'US',
-    url: match.url || '',
-    regionalRestrictions: match.regionalRestrictions || match.isRegional || false,
-    startTime: match.starttime || match.startTime || '',
-    endTime: match.endtime || match.endTime || '',
-    source: 'fubo_api',
-  }));
+  console.log(`Processing ${matches.length} match records`);
+  
+  try {
+    return matches.map((match, index) => {
+      if (!match || typeof match !== 'object') {
+        console.error(`Invalid match record at index ${index}:`, match);
+        return null;
+      }
+      
+      // Extract team names if available
+      let homeTeam = '';
+      let awayTeam = '';
+      
+      if (match.hometeam && match.awayteam) {
+        homeTeam = match.hometeam;
+        awayTeam = match.awayteam;
+      } else if (match.title) {
+        // Try to extract team names from title with format "Team A vs Team B"
+        const teamMatch = match.title.match(/(.+?)\s+(?:vs\.?|v\.?)\s+(.+)/i);
+        if (teamMatch && teamMatch.length >= 3) {
+          homeTeam = teamMatch[1].trim();
+          awayTeam = teamMatch[2].trim();
+        }
+      }
+      
+      // Create a normalized match object with fallbacks for all required fields
+      const normalizedMatch = {
+        id: match.id || `match-${Math.random().toString(36).substring(2, 9)}`,
+        title: match.title || 'Unknown Match',
+        hometeam: homeTeam || '',
+        awayteam: awayTeam || '',
+        hometeamID: match.hometeamID || '',
+        awayteamID: match.awayteamID || '',
+        starttime: match.starttime || match.startTime || new Date().toISOString(),
+        endtime: match.endtime || match.endTime || '',
+        sport: match.sport || 'Unknown',
+        league: match.league || '',
+        league_id: match.league_id || '',
+        network: match.network || '',
+        networkUrl: match.networkUrl || '',
+        matchId: match.matchId || match.id || '',
+        matchUrl: match.matchUrl || match.url || '',
+        thumbnail: match.thumbnail || '',
+        country: match.country || 'US',
+        url: match.url || '',
+        regionalRestrictions: !!match.regionalRestrictions || !!match.isRegional,
+        startTime: match.starttime || match.startTime || new Date().toISOString(),
+        endTime: match.endtime || match.endTime || '',
+        source: 'fubo_api',
+      };
+      
+      // Handle networks consistently as an array of objects
+      if (match.networks && Array.isArray(match.networks)) {
+        normalizedMatch.networks = match.networks.map(network => {
+          if (typeof network === 'string') {
+            return {
+              network,
+              isRegional: false
+            };
+          }
+          return {
+            network: network.network || 'Unknown Network',
+            isRegional: !!network.isRegional
+          };
+        });
+      } else if (match.network) {
+        // Create networks array from single network
+        normalizedMatch.networks = [{
+          network: match.network,
+          isRegional: !!match.regionalRestrictions || !!match.isRegional
+        }];
+      } else {
+        // Ensure networks is always an array
+        normalizedMatch.networks = [];
+      }
+      
+      return normalizedMatch;
+    }).filter(match => match !== null); // Remove any null entries
+  } catch (error) {
+    console.error('Error while processing match data:', error);
+    return [];
+  }
 }
 
 /**

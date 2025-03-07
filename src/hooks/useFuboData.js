@@ -70,16 +70,18 @@ export const useFuboData = () => {
 
         // Process results
         results.forEach(result => {
-          const { type, fetchFn, setDataFn } = dataSources.find(
-            source => source.type === result.value?.type
-          );
-
-          if (result.status === 'fulfilled') {
-            const { data } = result.value;
+          if (result.status === 'fulfilled' && result.value) {
+            const { type, data } = result.value;
+            const source = dataSources.find(source => source.type === type);
+            
+            if (!source) {
+              console.error(`No data source found for type: ${type}`);
+              return;
+            }
             
             if (Array.isArray(data) && data.length > 0) {
               notifySuccess(`Successfully loaded ${data.length} ${type}`);
-              dataSources.find(source => source.type === type).setDataFn(data);
+              source.setDataFn(data);
               setAppState(prev => ({
                 ...prev,
                 dataLoadStatus: {
@@ -89,7 +91,7 @@ export const useFuboData = () => {
               }));
             } else {
               notifyWarning(`No ${type} found`);
-              dataSources.find(source => source.type === type).setDataFn([]);
+              source.setDataFn([]);
               setAppState(prev => ({
                 ...prev,
                 dataLoadStatus: {
@@ -99,15 +101,24 @@ export const useFuboData = () => {
               }));
             }
           } else {
-            notifyError(`Error loading ${type} data: ${result.reason?.message || 'Unknown error'}`);
-            dataSources.find(source => source.type === type).setDataFn([]);
-            setAppState(prev => ({
-              ...prev,
-              dataLoadStatus: {
-                ...prev.dataLoadStatus,
-                [type]: 'error',
-              },
-            }));
+            // Handle rejected promises
+            // Since we can't get the type from result.value (it's rejected), 
+            // we need to match the index to determine which source failed
+            const index = results.indexOf(result);
+            if (index >= 0 && index < dataSources.length) {
+              const { type, setDataFn } = dataSources[index];
+              notifyError(`Error loading ${type} data: ${result.reason?.message || 'Unknown error'}`);
+              setDataFn([]);
+              setAppState(prev => ({
+                ...prev,
+                dataLoadStatus: {
+                  ...prev.dataLoadStatus,
+                  [type]: 'error',
+                },
+              }));
+            } else {
+              notifyError(`Error in data fetch: ${result.reason?.message || 'Unknown error'}`);
+            }
           }
         });
 
