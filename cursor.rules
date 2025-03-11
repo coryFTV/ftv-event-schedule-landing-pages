@@ -1,0 +1,42 @@
+description: "Shadcn UI component standards"
+patterns: "*.js,*.jsx"
+
+# Shadcn UI Components
+- Import using path aliases:
+  ```
+  import { Button } from "@/components/ui/button"
+  ```
+- Use cn utility for conditional class names:
+  ```
+  import { cn } from "@/utils/shadcn-ui"
+  
+  className={cn(
+    "base classes",
+    conditional && "conditional classes", 
+    className
+  )}
+  ```
+- Add hover states to buttons: 
+  ```
+  <Button className="hover:bg-primary/90">Click Me</Button>
+  ```
+- Use the card component for content sections:
+  ```
+  <Card>
+    <CardHeader>
+      <CardTitle>Title</CardTitle>
+      <CardDescription>Description</CardDescription>
+    </CardHeader>
+    <CardContent>Content here</CardContent>
+    <CardFooter>Footer actions</CardFooter>
+  </Card>
+  ```
+- Use the dropdown component for menus:
+  ```
+  <DropdownMenu>
+    <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+    <DropdownMenuContent>
+      <DropdownMenuItem>Item 1</DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+  ``` 
